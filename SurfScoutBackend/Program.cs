@@ -1,4 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using Npgsql;
 using SurfScoutBackend.Data;
 
@@ -16,6 +19,23 @@ catch (Exception ex)
 {
     Console.WriteLine($"ERROR  No connection to database: {ex.Message}");
 }
+
+// JSON Web Token - JWT to not always use password authentification - Token stored in client app
+var secretKey = "YOUR_SECRET_JWT_KEY_123";      // Change later from appsettings.json
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey))
+        };
+    });
+
+builder.Services.AddAuthorization();            // later: for roles and policies (admin, etc.)
 
 // Add services to the container.
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -40,6 +60,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
