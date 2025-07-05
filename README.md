@@ -11,7 +11,10 @@ The backend uses modern authentication and database technologies and is visualiz
 
 The quality of wave conditions at many windsurfing spots—particularly in **spatially limited coastal regions such as the southern North Sea**—is difficult to predict.  
 This is largely due to such areas having a **relatively small atmospheric catchment area (“wave engine”)**, making it challenging to derive reliable forecasts for wave development.  
-Factors such as wind direction, wind field size, tidal phases, timing, and local topography
+Factors such as wind direction, wind field size, tidal phases, timing, and local topography interact in complex ways—often beyond the capabilities of conventional forecast models.
+
+**SurfScout** aims to address this gap by systematically collecting and storing surf sessions with geolocation, timestamps, wind, and tidal data.  
+The long-term goal is to **identify historical patterns and understand how they relate to actual wave quality**—ultimately enabling **better predictions of future surf conditions** and improving decision-making for wind-based surf sessions.
 
 ---
 
