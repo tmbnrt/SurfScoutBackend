@@ -27,6 +27,10 @@ namespace SurfScoutBackend.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
+            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            if (existingUser != null)
+                return Conflict("User name already available.");
+
             if (string.IsNullOrWhiteSpace(user.PasswordHash))
                 return BadRequest("Password must not be empty.");
 
@@ -35,7 +39,7 @@ namespace SurfScoutBackend.Controllers
             user.PasswordHash = hashedPassword;
 
             _context.Users.Add(user);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();          // User to database
 
             // Do not return password in clear text
             user.PasswordHash = null;
