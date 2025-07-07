@@ -20,29 +20,29 @@ namespace SurfScoutBackend.Controllers
 
         public UsersController(AppDbContext context)
         {
-            _context = context;
+            this._context = context;
         }
 
         // New user registration endpoint
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {
-            var existingUser = await _context.Users.FirstOrDefaultAsync(u => u.Username == user.Username);
+            var existingUser = await _context.users.FirstOrDefaultAsync(u => u.username == user.username);
             if (existingUser != null)
                 return Conflict("User name already available.");
 
-            if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            if (string.IsNullOrWhiteSpace(user.passwordHash))
                 return BadRequest("Password must not be empty.");
 
             // Hash password and save
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
-            user.PasswordHash = hashedPassword;
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.passwordHash);
+            user.passwordHash = hashedPassword;
 
-            _context.Users.Add(user);
+            _context.users.Add(user);
             await _context.SaveChangesAsync();          // User to database
 
             // Do not return password in clear text
-            user.PasswordHash = null;
+            user.passwordHash = null;
             return Ok();
         }
 
@@ -50,14 +50,14 @@ namespace SurfScoutBackend.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] User loginRequest)
         {
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username == loginRequest.Username);
+            var user = await _context.users
+                .FirstOrDefaultAsync(u => u.username == loginRequest.username);
 
             if (user == null)
                 return Unauthorized("Username does not exist.");
 
             // Check password:  loginRequest.PasswordHash = clear text  -  user.PasswordHash = Hash
-            bool isValidPassword = BCrypt.Net.BCrypt.Verify(loginRequest.PasswordHash, user.PasswordHash);
+            bool isValidPassword = BCrypt.Net.BCrypt.Verify(loginRequest.passwordHash, user.passwordHash);
 
             if (!isValidPassword)
                 return Unauthorized("Not a valid password.");
@@ -65,8 +65,8 @@ namespace SurfScoutBackend.Controllers
             // Create personal JWT (JSON Web Token)
             var claims = new[]
             {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.NameIdentifier, user.id.ToString()),
+                new Claim(ClaimTypes.Name, user.username)
             };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YOUR_SECRET_JWT_KEY_123"));
@@ -83,8 +83,8 @@ namespace SurfScoutBackend.Controllers
             return Ok(new
             {
                 message = "Login succeeded.",
-                username = user.Username,
-                userId = user.Id,
+                username = user.username,
+                userId = user.id,
                 token = tokenString
             });
         }

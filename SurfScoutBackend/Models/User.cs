@@ -2,9 +2,9 @@
 {
     public class User
     {
-        public int Id { get; set; }
-        public string Username { get; set; } = string.Empty;
-        public string PasswordHash { get; set; } = string.Empty;
-        public List<Session> Sessions { get; set; } = new();
+        public int id { get; set; }
+        public string username { get; set; } = string.Empty;
+        public string passwordHash { get; set; } = string.Empty;
+        public List<Session> sessions { get; set; } = new();
     }
 }
