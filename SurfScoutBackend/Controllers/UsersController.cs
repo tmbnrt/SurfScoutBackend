@@ -9,6 +9,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using SurfScoutBackend.Models.DTOs;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -31,18 +32,18 @@ namespace SurfScoutBackend.Controllers
             if (existingUser != null)
                 return Conflict("User name already available.");
 
-            if (string.IsNullOrWhiteSpace(user.passwordHash))
+            if (string.IsNullOrWhiteSpace(user.password_hash))
                 return BadRequest("Password must not be empty.");
 
             // Hash password and save
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.passwordHash);
-            user.passwordHash = hashedPassword;
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.password_hash);
+            user.password_hash = hashedPassword;
 
             _context.users.Add(user);
             await _context.SaveChangesAsync();          // User to database
 
             // Do not return password in clear text
-            user.passwordHash = null;
+            user.password_hash = null;
             return Ok();
         }
 
@@ -57,7 +58,7 @@ namespace SurfScoutBackend.Controllers
                 return Unauthorized("Username does not exist.");
 
             // Check password:  loginRequest.PasswordHash = clear text  -  user.PasswordHash = Hash
-            bool isValidPassword = BCrypt.Net.BCrypt.Verify(loginRequest.passwordHash, user.passwordHash);
+            bool isValidPassword = BCrypt.Net.BCrypt.Verify(loginRequest.password_hash, user.password_hash);
 
             if (!isValidPassword)
                 return Unauthorized("Not a valid password.");
@@ -69,7 +70,8 @@ namespace SurfScoutBackend.Controllers
                 new Claim(ClaimTypes.Name, user.username)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("YOUR_SECRET_JWT_KEY_123"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("v3ry_s3cur3_and_l0ng_p3rs0nal_jwt_k3y_123456"));
+            // !!! FOR DEPLOYMENT --> store key in appsettings.json !!!
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
@@ -79,14 +81,20 @@ namespace SurfScoutBackend.Controllers
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
 
-            // Succeeded (Optional: JWT generation)
-            return Ok(new
+            var response = new LoginResponse
             {
-                message = "Login succeeded.",
-                username = user.username,
-                userId = user.id,
-                token = tokenString
-            });
+                Success = true,
+                Token = tokenString,
+                Message = "Login succeeded.",
+                User = new UserDto
+                {
+                    Id = user.id,
+                    Username = user.username,
+                    Role = user.role
+                }
+            };
+
+            return Ok(response);
         }
     }
 }

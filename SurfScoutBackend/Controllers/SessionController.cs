@@ -106,7 +106,6 @@ namespace SurfScoutBackend.Controllers
             return Ok(sessions);
         }
 
-
         // Return all available spots to clients (also not logged clients)
         [HttpGet("spots")]
         [AllowAnonymous]
@@ -118,15 +117,12 @@ namespace SurfScoutBackend.Controllers
                 .Select(g => new
                 {
                     Name = g.Key,
-                    lat = g.First().location.Y,
-                    Lng = g.First().location.X
-
+                    lat = g.Min(s => s.location.Y),
+                    Lng = g.Min(s => s.location.X)
                 })
                 .ToListAsync();
 
             return Ok(spots);
         }
-
-
-    }    
+    }
 }

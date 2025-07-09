@@ -22,7 +22,7 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<Session>()
                 .HasOne(s => s.user)
                 .WithMany(u => u.sessions)
-                .HasForeignKey(s => s.user.id);
+                .HasForeignKey(s => s.userId);
         }
     }
 }
