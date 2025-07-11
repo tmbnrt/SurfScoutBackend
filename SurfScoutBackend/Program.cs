@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using NetTopologySuite.IO.Converters;
 using System.Text;
 using Npgsql;
 using SurfScoutBackend.Data;
@@ -41,10 +42,16 @@ builder.Services.AddAuthorization();            // later: for roles and policies
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        x => x.UseNetTopologySuite()
+        npgsql => npgsql.UseNetTopologySuite()
     ));
 
-builder.Services.AddControllers();
+builder.Services
+    .AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new GeoJsonConverterFactory());
+    });
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
