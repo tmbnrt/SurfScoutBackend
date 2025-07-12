@@ -32,43 +32,40 @@ namespace SurfScoutBackend.Controllers
 
             foreach (var spot in incomingSpots)
             {
-                if (spot.location == null || string.IsNullOrWhiteSpace(spot.name))
+                if (spot.Location == null || string.IsNullOrWhiteSpace(spot.Name))
                     continue;
 
                 // Check for duplicate (name and position)
                 bool alreadyExists = existingSpots.Any(db =>
-                    db.name == spot.name &&
-                    db.location != null &&
-                    Math.Abs(db.location.X - spot.location.X) < 10 &&
-                    Math.Abs(db.location.Y - spot.location.Y) < 10
+                    db.Name == spot.Name &&
+                    Math.Abs(db.Location.X - spot.Location.X) < 10 &&
+                    Math.Abs(db.Location.Y - spot.Location.Y) < 10
                 );
 
                 if (!alreadyExists)
                 {
                     var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-                    var point = geometryFactory.CreatePoint(new Coordinate(spot.location.X, spot.location.Y));
-
-                    Console.WriteLine($"Incoming type: {point.GetType()}");
+                    var point = geometryFactory.CreatePoint(new Coordinate(spot.Location.X, spot.Location.Y));
 
                     if (point.SRID != 4326)
                         point.SRID = 4326;
 
                     spotsToAdd.Add(new Spot
                     {
-                        name = spot.name,
-                        location = point,
-                        sessions = new List<Session>()
+                        Name = spot.Name,
+                        Location = point,
+                        //longitude = point.X,
+                        //latitude = point.Y,
+                        Sessions = new List<Session>()
                     });
                 }                              
             }
 
             if (spotsToAdd.Count() > 0)
             {
-                foreach (var addSpot in spotsToAdd)
-                {
-                    _context.spots.Add(addSpot);
-                }                    
-                //_context.spots.AddRange(spotsToAdd);
+                //foreach (var addSpot in spotsToAdd)
+                //    _context.spots.Add(addSpot);
+                _context.spots.AddRange(spotsToAdd);
                 await _context.SaveChangesAsync();
             }
 
@@ -84,14 +81,13 @@ namespace SurfScoutBackend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAllSpots()
         {
-            var spots = await _context.sessions
-                .Where(s => s.location != null)
-                .GroupBy(s => s.spot.name.ToLower())
-                .Select(g => new
+            var spots = await _context.spots
+                .Where(s => s.Name != null)
+                .Select(s => new
                 {
-                    Name = g.Key,
-                    lat = g.Min(s => s.location.X),
-                    Lng = g.Min(s => s.location.Y)
+                    Name = s.Name,
+                    Latitude = s.Location.Y,
+                    Longitude = s.Location.X
                 })
                 .ToListAsync();
 
@@ -109,10 +105,10 @@ namespace SurfScoutBackend.Controllers
             if (spot == null)
                 return NotFound("Spot not found.");
 
-            spot.name = newName.Trim();
+            spot.Name = newName.Trim();
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = $"Spot renamed to: {spot.name}"});
+            return Ok(new { message = $"Spot renamed to: {spot.Name}"});
         }
 
         // Method to get all data from all users (admin only)

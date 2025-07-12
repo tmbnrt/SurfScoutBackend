@@ -29,20 +29,20 @@ namespace SurfScoutBackend.Controllers
                 return BadRequest("Session data not valid.");
 
             int userID = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            session.userId = userID;
-            session.user = null;                    // Avoid EF error in navigation property
+            session.UserId = userID;
+            session.User = null;                    // Avoid EF error in navigation property
 
             var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-            var point = geometryFactory.CreatePoint(new Coordinate(session.location.X, session.location.Y));
+            var point = geometryFactory.CreatePoint(new Coordinate(session.Location.X, session.Location.Y));
 
             var existingSpot = await _context.sessions
-                .Where(s => s.location != null)
-                .OrderBy(s => s.location.Distance(point))
-                .FirstOrDefaultAsync(s => s.location.IsWithinDistance(point, 500));
+                .Where(s => s.Location != null)
+                .OrderBy(s => s.Location.Distance(point))
+                .FirstOrDefaultAsync(s => s.Location.IsWithinDistance(point, 500));
 
             // Use alredy existing spot name
-            if (existingSpot != null && !string.IsNullOrWhiteSpace(existingSpot.spot.name))
-                session.spot.name = existingSpot.spot.name;            
+            if (existingSpot != null && !string.IsNullOrWhiteSpace(existingSpot.Spot.Name))
+                session.Spot.Name = existingSpot.Spot.Name;            
 
             _context.sessions.Add(session);
             await _context.SaveChangesAsync();      // User's session to database
@@ -82,13 +82,13 @@ namespace SurfScoutBackend.Controllers
             int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
             var query = _context.sessions
-                .Where(s => s.userId == userId);
+                .Where(s => s.UserId == userId);
 
             if (date.HasValue)
-                query = query.Where(s => s.date == date.Value);
+                query = query.Where(s => s.Date == date.Value);
 
             if (!string.IsNullOrWhiteSpace(spot))
-                query = query.Where(s => s.spot.name.ToLower().Contains(spot.ToLower()));
+                query = query.Where(s => s.Spot.Name.ToLower().Contains(spot.ToLower()));
 
             // Geolocation filter
             if (lat.HasValue && lng.HasValue && radiusKm.HasValue)
@@ -99,7 +99,7 @@ namespace SurfScoutBackend.Controllers
                 // Radius in [m]
                 double radiusMeters = radiusKm.Value * 1000;
 
-                query = query.Where(s => s.location.IsWithinDistance(searchPoint, radiusMeters));
+                query = query.Where(s => s.Location.IsWithinDistance(searchPoint, radiusMeters));
             }
 
             var sessions = await query.ToListAsync();
@@ -112,13 +112,13 @@ namespace SurfScoutBackend.Controllers
         public async Task<IActionResult> GetAllSpots()
         {
             var spots = await _context.sessions
-                .Where(s => s.location != null)
-                .GroupBy(s => s.spot.name.ToLower())
+                .Where(s => s.Location != null)
+                .GroupBy(s => s.Spot.Name.ToLower())
                 .Select(g => new
                 {
                     Name = g.Key,
-                    lat = g.Min(s => s.location.Y),
-                    Lng = g.Min(s => s.location.X)
+                    lat = g.Min(s => s.Location.Y),
+                    Lng = g.Min(s => s.Location.X)
                 })
                 .ToListAsync();
 

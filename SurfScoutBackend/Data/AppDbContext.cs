@@ -16,17 +16,22 @@ namespace SurfScoutBackend.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Spot>()
-                .Property(s => s.location)
-                .HasColumnType("geometry(Point,4326)");
-
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Session>().ToTable("sessions");
+            modelBuilder.Entity<Spot>().ToTable("spots");
+
+            modelBuilder.Entity<Spot>()
+                .Property(s => s.Location)
+                .HasColumnType("geometry(Point,4326)");
 
             modelBuilder.Entity<Session>()
-                .HasOne(s => s.user)
-                .WithMany(u => u.sessions)
-                .HasForeignKey(s => s.userId);
+                .HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId);
+
+            modelBuilder.Entity<Session>()
+                .Property(s => s.Location)
+                .HasColumnType("geometry(Point,4326)");
         }
     }
 }

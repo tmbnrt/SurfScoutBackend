@@ -6,19 +6,19 @@ namespace SurfScoutBackend.Models
 {
     public class Session
     {
-        public int id {  get; set; }
-        public DateOnly date { get; set; }
-        public double wave_height { get; set; }
-        public int rating { get; set; }
-        public double sail_size { get; set; }
-        public int board_volume { get; set; }
-        public int spotid { get; set; }
-        public Spot spot { get; set; }              // Navigation property
-        public string tide {  get; set;}
-        public Point location { get; set;}          // in GeoJSON format (geo point)
+        public int Id {  get; set; }
+        public DateOnly Date { get; set; }
+        public double Wave_height { get; set; }
+        public int Rating { get; set; }
+        public double Sail_size { get; set; }
+        public int Board_volume { get; set; }
+        public int Spotid { get; set; }
+        public Spot Spot { get; set; }              // Navigation property
+        public string Tide {  get; set;}
+        public Point Location { get; set;}          // in GeoJSON format (geo point)
         //public Geometry polygon { get; set;}      // i.e. wind field size in GeoJSON format (geo polygon)
 
-        public int userId { get; set; }             // External key
-        public User user { get; set; } = null!;     // Navigation property
+        public int UserId { get; set; }             // External key
+        public User User { get; set; } = null!;     // Navigation property
     }
 }

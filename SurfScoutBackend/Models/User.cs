@@ -2,10 +2,10 @@
 {
     public class User
     {
-        public int id { get; set; }
-        public string username { get; set; } = string.Empty;
-        public string role { get; set; } = string.Empty;
-        public string password_hash { get; set; } = string.Empty;
-        public List<Session> sessions { get; set; } = new();
+        public int Id { get; set; }
+        public string Username { get; set; } = string.Empty;
+        public string Role { get; set; } = string.Empty;
+        public string Password_hash { get; set; } = string.Empty;
+        public List<Session> Sessions { get; set; } = new();
     }
 }
