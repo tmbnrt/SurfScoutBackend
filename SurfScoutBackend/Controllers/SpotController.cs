@@ -26,6 +26,11 @@ namespace SurfScoutBackend.Controllers
         [HttpPost("sync")]
         public async Task<IActionResult> SyncSpots([FromBody] List<Spot> incomingSpots)
         {
+            // Debug: Check Json
+            Console.WriteLine("DEBUG ...");
+            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(incomingSpots));
+
+
             // Load spots from database
             var existingSpots = await _context.spots.ToListAsync();
             var spotsToAdd = new List<Spot>();

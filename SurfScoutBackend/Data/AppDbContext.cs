@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using NetTopologySuite.Geometries;
 using SurfScoutBackend.Models;
 
 namespace SurfScoutBackend.Data
@@ -30,8 +31,10 @@ namespace SurfScoutBackend.Data
                 .HasForeignKey(s => s.UserId);
 
             modelBuilder.Entity<Session>()
-                .Property(s => s.Location)
-                .HasColumnType("geometry(Point,4326)");
+                .HasOne(s => s.Spot)
+                .WithMany(s => s.Sessions)
+                .HasForeignKey(s => s.Spotid)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

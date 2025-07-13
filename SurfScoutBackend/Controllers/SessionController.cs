@@ -32,20 +32,15 @@ namespace SurfScoutBackend.Controllers
             session.UserId = userID;
             session.User = null;                    // Avoid EF error in navigation property
 
-            var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-            var point = geometryFactory.CreatePoint(new Coordinate(session.Location.X, session.Location.Y));
+            // Get related spot location from db
+            var spot = await _context.spots.FindAsync(session.Spotid);
+            if (spot == null)
+                return BadRequest("Referenced spot not found or no location defined.");
 
-            var existingSpot = await _context.sessions
-                .Where(s => s.Location != null)
-                .OrderBy(s => s.Location.Distance(point))
-                .FirstOrDefaultAsync(s => s.Location.IsWithinDistance(point, 500));
-
-            // Use alredy existing spot name
-            if (existingSpot != null && !string.IsNullOrWhiteSpace(existingSpot.Spot.Name))
-                session.Spot.Name = existingSpot.Spot.Name;            
+            session.Spot = spot;
 
             _context.sessions.Add(session);
-            await _context.SaveChangesAsync();      // User's session to database
+            await _context.SaveChangesAsync();
 
             return Ok(session);
         }
@@ -99,7 +94,7 @@ namespace SurfScoutBackend.Controllers
                 // Radius in [m]
                 double radiusMeters = radiusKm.Value * 1000;
 
-                query = query.Where(s => s.Location.IsWithinDistance(searchPoint, radiusMeters));
+                query = query.Where(s => s.Spot.Location.IsWithinDistance(searchPoint, radiusMeters));
             }
 
             var sessions = await query.ToListAsync();
@@ -112,13 +107,13 @@ namespace SurfScoutBackend.Controllers
         public async Task<IActionResult> GetAllSpots()
         {
             var spots = await _context.sessions
-                .Where(s => s.Location != null)
+                .Where(s => s.Spot.Location != null)
                 .GroupBy(s => s.Spot.Name.ToLower())
                 .Select(g => new
                 {
                     Name = g.Key,
-                    lat = g.Min(s => s.Location.Y),
-                    Lng = g.Min(s => s.Location.X)
+                    lat = g.Min(s => s.Spot.Location.Y),
+                    Lng = g.Min(s => s.Spot.Location.X)
                 })
                 .ToListAsync();
 

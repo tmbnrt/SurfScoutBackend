@@ -15,7 +15,7 @@ namespace SurfScoutBackend.Models
         public int Spotid { get; set; }
         public Spot Spot { get; set; }              // Navigation property
         public string Tide {  get; set;}
-        public Point Location { get; set;}          // in GeoJSON format (geo point)
+        //public Point Location { get; set;}          // in GeoJSON format (geo point)
         //public Geometry polygon { get; set;}      // i.e. wind field size in GeoJSON format (geo polygon)
 
         public int UserId { get; set; }             // External key
