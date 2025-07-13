@@ -8,6 +8,8 @@ using SurfScoutBackend.Models;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.IntervalRTree;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -26,11 +28,6 @@ namespace SurfScoutBackend.Controllers
         [HttpPost("sync")]
         public async Task<IActionResult> SyncSpots([FromBody] List<Spot> incomingSpots)
         {
-            // Debug: Check Json
-            Console.WriteLine("DEBUG ...");
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(incomingSpots));
-
-
             // Load spots from database
             var existingSpots = await _context.spots.ToListAsync();
             var spotsToAdd = new List<Spot>();
@@ -86,13 +83,22 @@ namespace SurfScoutBackend.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> GetAllSpots()
         {
+            //var spots = await _context.spots
+            //    .Where(s => s.Name != null)
+            //    .Select(s => new
+            //    {
+            //        Name = s.Name,
+            //        Latitude = s.Location.Y,
+            //        Longitude = s.Location.X
+            //    })
+            //    .ToListAsync();
+
             var spots = await _context.spots
-                .Where(s => s.Name != null)
+                .Where(s => s.Name != null && s.Location != null)
                 .Select(s => new
                 {
                     Name = s.Name,
-                    Latitude = s.Location.Y,
-                    Longitude = s.Location.X
+                    Location = s.Location
                 })
                 .ToListAsync();
 
