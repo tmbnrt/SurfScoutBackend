@@ -11,7 +11,7 @@ using NetTopologySuite.Geometries;
 namespace SurfScoutBackend.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/sessions")]
     public class SessionController : ControllerBase
     {
         private readonly AppDbContext _context;
@@ -66,38 +66,23 @@ namespace SurfScoutBackend.Controllers
         // Get-method to return session list to the client
         // Exmpl request:  'GET /api/session/search?lat=57.1&lng=8.5&radiusKm=10'
         [Authorize]
-        [HttpGet("search")]
-        public async Task<IActionResult> GetUserSessions(
-            [FromQuery] DateOnly? date,
-            [FromQuery] string? spot,
-            [FromQuery] double? lat,
-            [FromQuery] double? lng,
-            [FromQuery] double? radiusKm)
+        [HttpGet("spotsessions")]
+        public async Task<IActionResult> GetUserSessions([FromQuery] string? spot)
         {
-            int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            if (string.IsNullOrWhiteSpace(spot))
+                return BadRequest("Spot name not defined!");
+
+            if (_context == null)
+                return StatusCode(500, "Database context not initialized.");
 
             var query = _context.sessions
-                .Where(s => s.UserId == userId);
-
-            if (date.HasValue)
-                query = query.Where(s => s.Date == date.Value);
-
-            if (!string.IsNullOrWhiteSpace(spot))
-                query = query.Where(s => s.Spot.Name.ToLower().Contains(spot.ToLower()));
-
-            // Geolocation filter
-            if (lat.HasValue && lng.HasValue && radiusKm.HasValue)
-            {
-                var geometryFactory = NtsGeometryServices.Instance.CreateGeometryFactory(srid: 4326);
-                var searchPoint = geometryFactory.CreatePoint(new Coordinate(lng.Value, lat.Value));
-
-                // Radius in [m]
-                double radiusMeters = radiusKm.Value * 1000;
-
-                query = query.Where(s => s.Spot.Location.IsWithinDistance(searchPoint, radiusMeters));
-            }
+                .Where(s => EF.Functions.Like(s.Spot.Name, $"%{spot}%"));
 
             var sessions = await query.ToListAsync();
+
+            if (!sessions.Any())
+                return NotFound($"No sessions found for '{spot}'.");
+
             return Ok(sessions);
         }
 
