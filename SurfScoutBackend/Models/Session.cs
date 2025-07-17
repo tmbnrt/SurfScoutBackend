@@ -8,10 +8,11 @@ namespace SurfScoutBackend.Models
     {
         public int Id {  get; set; }
         public DateOnly Date { get; set; }
+        public TimeOnly StartTime { get; set; }
+        public TimeOnly EndTime { get; set; }
         public double Wave_height { get; set; }
         public int Rating { get; set; }
         public double Sail_size { get; set; }
-        public int Board_volume { get; set; }
         public int Spotid { get; set; }
         public Spot Spot { get; set; }              // Navigation property
         public string Tide {  get; set;}

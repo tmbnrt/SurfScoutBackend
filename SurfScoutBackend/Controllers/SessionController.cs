@@ -7,6 +7,7 @@ using SurfScoutBackend.Data;
 using SurfScoutBackend.Models;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
+using SurfScoutBackend.Models.DTOs;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -22,22 +23,38 @@ namespace SurfScoutBackend.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> CreateSession([FromBody] Session session)
+        [HttpPost("savesession")]
+        public async Task<IActionResult> CreateSession([FromBody] CreateSessionDto dto)
         {
-            if (session == null)
-                return BadRequest("Session data not valid.");
+            if (_context == null)
+                return StatusCode(500, "Database context not initialized.");
 
-            int userID = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            session.UserId = userID;
-            session.User = null;                    // Avoid EF error in navigation property
-
-            // Get related spot location from db
-            var spot = await _context.spots.FindAsync(session.Spotid);
+            // Check spot
+            var spot = await _context.spots.FindAsync(dto.SpotId);
             if (spot == null)
-                return BadRequest("Referenced spot not found or no location defined.");
+                return NotFound($"Spot with ID {dto.SpotId} not found.");
 
-            session.Spot = spot;
+            // Check user
+            var user = await _context.users.FindAsync(dto.UserId);
+            if (user == null)
+                return NotFound($"User with ID {dto.UserId} not found.");
+
+            // Create session
+            var session = new Session
+            {
+                StartTime = dto.StartTime,
+                EndTime = dto.EndTime,
+                Date = dto.Date,
+                Spot = spot,
+                User = user,
+                Sail_size = dto.Sail_size,
+                Rating = dto.Rating,
+                Wave_height = dto.Wave_height
+            };
+
+            // TO DO: ADD WEATHER INFO
+            // ... pass location, date and time to function (create new weather class model)
+            // ----> async in backend process! <----
 
             _context.sessions.Add(session);
             await _context.SaveChangesAsync();
