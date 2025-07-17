@@ -97,6 +97,7 @@ namespace SurfScoutBackend.Controllers
                 .Where(s => s.Name != null && s.Location != null)
                 .Select(s => new
                 {
+                    Id = s.Id,
                     Name = s.Name,
                     Location = s.Location
                 })
