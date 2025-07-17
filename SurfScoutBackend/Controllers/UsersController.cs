@@ -19,10 +19,13 @@ namespace SurfScoutBackend.Controllers
     {
         private readonly AppDbContext _context;
 
-        public UsersController(AppDbContext context)
+        public UsersController(IConfiguration config, AppDbContext context)
         {
             this._context = context;
+            _config = config;
         }
+
+        private readonly IConfiguration _config;
 
         // New user registration endpoint
         [HttpPost("register")]
@@ -70,7 +73,8 @@ namespace SurfScoutBackend.Controllers
                 new Claim(ClaimTypes.Name, user.Username)
             };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("v3ry_s3cur3_and_l0ng_p3rs0nal_jwt_k3y_123456"));
+            //var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("v3ry_s3cur3_and_l0ng_p3rs0nal_jwt_k3y_123456"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
             // !!! FOR DEPLOYMENT --> store key in appsettings.json !!!
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
