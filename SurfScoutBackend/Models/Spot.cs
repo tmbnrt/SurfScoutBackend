@@ -11,6 +11,6 @@ namespace SurfScoutBackend.Models
         //public double latitude { get; set; }
 
         // Navigation property
-        public List<Session> Sessions { get; set; }
+        public List<Session> Sessions { get; set; } = new();
     }
 }

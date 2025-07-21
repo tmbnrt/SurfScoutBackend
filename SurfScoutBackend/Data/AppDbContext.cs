@@ -31,9 +31,10 @@ namespace SurfScoutBackend.Data
                 .HasForeignKey(s => s.UserId);
 
             modelBuilder.Entity<Session>()
-                .HasOne(s => s.Spot)
+                .HasOne(s => s.Spot)                
                 .WithMany(s => s.Sessions)
                 .HasForeignKey(s => s.Spotid)
+                .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
         }
     }
