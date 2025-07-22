@@ -64,7 +64,8 @@ namespace SurfScoutBackend.Controllers
             _context.sessions.Add(session);
             await _context.SaveChangesAsync();
 
-            return Ok(session);
+            //return Ok(session);
+            return Ok("Session saved successfully");
         }
 
         // Get-method to return session list to the client
