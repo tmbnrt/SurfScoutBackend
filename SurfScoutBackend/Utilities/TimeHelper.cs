@@ -1,4 +1,7 @@
-﻿namespace SurfScoutBackend.Utilities
+﻿using GeoTimeZone;
+using TimeZoneConverter;
+
+namespace SurfScoutBackend.Utilities
 {
     public static class TimeHelper
     {
@@ -14,5 +17,18 @@
             return meanTime;
         }
 
+        public static DateTime ToUtc(DateOnly date, TimeOnly time, double lat, double lng)
+        {
+            var localTime = date.ToDateTime(time);
+
+            // Time zone from coordinates
+            string ianaZone = TimeZoneLookup.GetTimeZone(lat, lng).Result;
+
+            // Convert to Dotnet timezone
+            TimeZoneInfo tz = TZConvert.GetTimeZoneInfo(ianaZone);
+
+            // Local time to UTC
+            return TimeZoneInfo.ConvertTimeToUtc(localTime, tz);
+        }
     }
 }

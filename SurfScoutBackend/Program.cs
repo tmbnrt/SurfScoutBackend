@@ -6,6 +6,8 @@ using NetTopologySuite;
 using System.Text;
 using Npgsql;
 using SurfScoutBackend.Data;
+using SurfScoutBackend.Weather;
+using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +73,15 @@ builder.Services.AddControllers()
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddHttpClient<StormglassWeatherClient>((sp, client) =>
+{
+    var config = sp.GetRequiredService<IConfiguration>();
+    var apiKey = config["Stormglass:ApiKey"];
+
+    client.DefaultRequestHeaders.Authorization =
+        new AuthenticationHeaderValue("Bearer", apiKey);
+});
 
 var app = builder.Build();
 

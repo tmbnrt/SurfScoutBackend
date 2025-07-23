@@ -8,6 +8,10 @@ using SurfScoutBackend.Models;
 using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using SurfScoutBackend.Models.DTOs;
+using SurfScoutBackend.Utilities;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+using SurfScoutBackend.Weather;
+using SurfScoutBackend.Utilities;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -16,10 +20,12 @@ namespace SurfScoutBackend.Controllers
     public class SessionController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly StormglassWeatherClient _weatherClient;
 
-        public SessionController(AppDbContext context)
+        public SessionController(AppDbContext context, StormglassWeatherClient weatherClient)
         {
             this._context = context;
+            this._weatherClient = weatherClient;
         }
 
         [Authorize]
@@ -39,7 +45,14 @@ namespace SurfScoutBackend.Controllers
             if (user == null)
                 return NotFound($"User with ID {dto.UserId} not found.");
 
-            // TO DO: ADD WEATHER INFO
+            // Get wind data from StormGlass API
+            List<WindData> windDataList = await _weatherClient.GetWindAsync(spot.Location.Y, spot.Location.X,
+                                                                            dto.Date, dto.StartTime, dto.EndTime);
+
+            // Calculate averaged wind speed for session
+            double averageSpeedInKnots = WeatherDataHelper.AverageWindSpeed(windDataList);
+            double averageDirectionInDegree = WeatherDataHelper.AverageWindDirectionDegree(windDataList);
+
             // ... pass location, date and time to function (create new weather class model)
             // ----> async in backend process! <----
 
