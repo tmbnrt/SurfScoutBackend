@@ -53,6 +53,15 @@ namespace SurfScoutBackend.Controllers
             double averageSpeedInKnots = WeatherDataHelper.AverageWindSpeed(windDataList);
             double averageDirectionInDegree = WeatherDataHelper.AverageWindDirectionDegree(windDataList);
 
+            // Get tidal date from StormGlass API
+            List<TideData> tideDataExtremes = await _weatherClient.GetTideExtremesAsync(spot.Location.Y,
+                                                                                        spot.Location.X,
+                                                                                        dto.Date);
+
+            // Get tide info for the session
+            string sessionsTide = TidalDataHelper.GetSessionTideInfo(tideDataExtremes, dto.Date, dto.StartTime, dto.EndTime);
+
+
             // ... pass location, date and time to function (create new weather class model)
             // ----> async in backend process! <----
 
