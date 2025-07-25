@@ -59,11 +59,7 @@ namespace SurfScoutBackend.Controllers
                                                                                         dto.Date);
 
             // Get tide info for the session
-            string sessionsTide = TidalDataHelper.GetSessionTideInfo(tideDataExtremes, dto.Date, dto.StartTime, dto.EndTime);
-
-
-            // ... pass location, date and time to function (create new weather class model)
-            // ----> async in backend process! <----
+            string sessionsTide = TidalDataHelper.GetSessionTideAsString(tideDataExtremes, dto.Date, dto.StartTime, dto.EndTime);
 
             // Create session
             var session = new Session
@@ -73,6 +69,7 @@ namespace SurfScoutBackend.Controllers
                 Date = dto.Date,
                 Spot = spot,
                 Spotid = dto.SpotId,
+                Tide = sessionsTide,
                 User = user,
                 UserId = dto.UserId,
                 Sail_size = dto.Sail_size,

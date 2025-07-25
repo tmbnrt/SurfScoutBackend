@@ -10,6 +10,7 @@ using NetTopologySuite.Geometries;
 using NetTopologySuite.Index.IntervalRTree;
 using System.Text.Json.Serialization;
 using System.Text.Json;
+using SurfScoutBackend.Models.DTOs;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -123,7 +124,19 @@ namespace SurfScoutBackend.Controllers
             return Ok(new { message = $"Spot renamed to: {spot.Name}"});
         }
 
-        // Method to get all data from all users (admin only)
-        // ...
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id}/definewindfetch")]
+        public async Task<IActionResult> DefineWindFetchArea([FromBody] WindFetchAreaDto dto)
+        {
+            var spot = await _context.spots.FindAsync(dto.Id);
+
+            if (spot == null)
+                return NotFound();
+
+            spot.WindFetchPolygon = dto.WindFetchPolygon;
+            await _context.SaveChangesAsync();
+
+            return Ok();
+        }
     }
 }
