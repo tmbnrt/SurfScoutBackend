@@ -5,6 +5,6 @@ namespace SurfScoutBackend.Models.DTOs
     public class WindFetchAreaDto
     {
         public int Id { get; set; }
-        public Polygon WindFetchPolygon { get; set; }
+        public GeoJsonDto Geometry { get; set; }
     }
 }

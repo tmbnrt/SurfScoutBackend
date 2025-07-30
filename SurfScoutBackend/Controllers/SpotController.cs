@@ -11,6 +11,7 @@ using NetTopologySuite.Index.IntervalRTree;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using SurfScoutBackend.Models.DTOs;
+using SurfScoutBackend.Utilities;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -126,17 +127,23 @@ namespace SurfScoutBackend.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}/definewindfetch")]
-        public async Task<IActionResult> DefineWindFetchArea([FromBody] WindFetchAreaDto dto)
+        public async Task<IActionResult> DefineWindFetchArea(int id, [FromBody] WindFetchAreaDto dto)
         {
-            var spot = await _context.spots.FindAsync(dto.Id);
+            var spot = await _context.spots.FindAsync(id);
 
             if (spot == null)
                 return NotFound();
 
-            spot.WindFetchPolygon = dto.WindFetchPolygon;
+            Polygon? polygon = GeoDataHelper.CreatePolygonFromDto(dto.Geometry);
+
+            spot.WindFetchPolygon = polygon;
+
             await _context.SaveChangesAsync();
 
             return Ok();
         }
+
+        // Endpoint for storing geo points in database -> Base for wind data
+        // ...
     }
 }

@@ -70,7 +70,8 @@ namespace SurfScoutBackend.Controllers
             var claims = new[]
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username)
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
             };
 
             //var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("v3ry_s3cur3_and_l0ng_p3rs0nal_jwt_k3y_123456"));
@@ -100,5 +101,8 @@ namespace SurfScoutBackend.Controllers
 
             return Ok(response);
         }
+
+        // For Admins: Claim new Admins
+        // ...
     }
 }
