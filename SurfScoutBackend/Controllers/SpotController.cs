@@ -143,6 +143,34 @@ namespace SurfScoutBackend.Controllers
             return Ok();
         }
 
+        [AllowAnonymous]
+        [HttpGet("returnwindfetch")]
+        public async Task<IActionResult> ReturnWindFetchArea(int spotId)
+        {
+            if (spotId == null || spotId <= 0)
+                return BadRequest("Spot ID is not valid!");
+
+            if (_context == null)
+                return StatusCode(500, "Database context not initialized.");
+
+            var query = _context.spots
+                .Where(s => s.Id == spotId);
+            
+            var spot = query.FirstOrDefault();
+
+            if (spot == null)
+                return NotFound("No spot was found.");
+
+            Polygon polygon = spot.WindFetchPolygon;
+
+            if (polygon == null)
+                return NotFound("No wind fetch field set for current spot.");
+
+            GeoJsonDto dto = GeoDataHelper.CreateDtoFromPolygon(polygon);
+
+            return Ok(dto);
+        }
+
         // Endpoint for storing geo points in database -> Base for wind data
         // ...
     }

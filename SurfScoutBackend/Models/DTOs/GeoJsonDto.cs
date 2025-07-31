@@ -3,6 +3,6 @@
     public class GeoJsonDto
     {
         public string Type { get; set; } = "Polygon";
-        public List<List<double[]>>? Coordinates { get; set; }
+        public List<List<List<double>>>? Coordinates { get; set; }
     }
 }

@@ -13,12 +13,20 @@ namespace SurfScoutBackend.Utilities
             var shell = new LinearRing(dto.Coordinates[0]
                 .Select(pair => new Coordinate(pair[0], pair[1])).ToArray());
 
-            var polygon = new Polygon(shell)
-            {
-                SRID = 4326
-            };
+            return new Polygon(shell) { SRID = 4326 };
+        }
 
-            return polygon;
+        public static GeoJsonDto CreateDtoFromPolygon(Polygon polygon)
+        {
+            var coordinates = polygon.Shell.Coordinates
+                .Select(coord => new List<double> { coord.X, coord.Y })
+                .ToList();
+
+            return new GeoJsonDto
+            {
+                Type = "Polygon",
+                Coordinates = new List<List<List<double>>> { coordinates }
+            };
         }
     }
 }
