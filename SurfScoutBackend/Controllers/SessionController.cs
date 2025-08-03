@@ -74,20 +74,18 @@ namespace SurfScoutBackend.Controllers
                 UserId = dto.UserId,
                 Sail_size = dto.Sail_size,
                 Rating = dto.Rating,
-                Wave_height = dto.Wave_height
+                Wave_height = dto.Wave_height,
+                WindSpeedKnots = averageSpeedInKnots,
+                WindDirectionDegree = averageDirectionInDegree
             };
-
-            // TO DO: Is user assignment correct?
-            // --> session to user assigned?!
 
             _context.sessions.Add(session);
             await _context.SaveChangesAsync();
 
-            //return Ok(session);
             return Ok("Session saved successfully");
         }
 
-        // Get-method to return session list to the client
+        // Returns user sessions for a given spot by Id
         [Authorize]
         [HttpGet("spotsessions")]
         public async Task<IActionResult> GetUserSessions([FromQuery] int? spotId)

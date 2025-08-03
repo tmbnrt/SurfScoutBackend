@@ -74,13 +74,22 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddHttpClient<StormglassWeatherClient>((sp, client) =>
+// Stormglass weather client
+builder.Services.AddHttpClient("StormglassClient", client =>
 {
+    var config = builder.Configuration;
+    var apiKey = config["Stormglass:ApiKey"];
+    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
+});
+
+builder.Services.AddTransient<StormglassWeatherClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
     var config = sp.GetRequiredService<IConfiguration>();
     var apiKey = config["Stormglass:ApiKey"];
+    var httpClient = factory.CreateClient("StormglassClient");
 
-    client.DefaultRequestHeaders.Authorization =
-        new AuthenticationHeaderValue("Bearer", apiKey);
+    return new StormglassWeatherClient(httpClient, apiKey);
 });
 
 var app = builder.Build();

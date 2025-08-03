@@ -4,6 +4,8 @@ using System.Net.Http.Headers;
 using GeoTimeZone;
 using TimeZoneConverter;
 using System.Text.Json;
+using System.Net;
+using System.Globalization;
 
 namespace SurfScoutBackend.Weather
 {
@@ -24,16 +26,26 @@ namespace SurfScoutBackend.Weather
             var startUtc = TimeHelper.ToUtc(date, startTime, lat, lng);
             var endUtc = TimeHelper.ToUtc(date, endTime, lat, lng);
 
-            var isoStart = startUtc.ToString("yyyy-MM-ddTHH:mm:ssZ");
-            var isoEnd = endUtc.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            string isoStart = startUtc.ToString("yyyy-MM-ddTHH:mm:ssZ");
+            string isoEnd = endUtc.ToString("yyyy-MM-ddTHH:mm:ssZ");
+
+            string lat_str = lat.ToString(CultureInfo.InvariantCulture);
+            string lng_str = lng.ToString(CultureInfo.InvariantCulture);
 
             // Call StormGlass API
-            var url = $"https://api.stormglass.io/v2/weather/point?lat={lat}&lng={lng}&params=windSpeed,windDirection&start={isoStart}&end={isoEnd}";
+            var url = $"https://api.stormglass.io/v2/weather/point?lat={lat_str}&lng={lng_str}&params=windSpeed,windDirection&start={isoStart}&end={isoEnd}";
             var response = await _httpClient.GetAsync(url);
+
+            if ((int)response.StatusCode == 422)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Stormglass API error: Unprocessable Entity – {errorContent}");
+            }
 
             if (!response.IsSuccessStatusCode)
             {
-                throw new Exception($"Stormglass API error: {response.StatusCode}");
+                var errorContent = await response.Content.ReadAsStringAsync();
+                throw new Exception($"Stormglass API error: {errorContent}");
             }
 
             var json = await response.Content.ReadAsStringAsync();
