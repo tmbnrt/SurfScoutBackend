@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NetTopologySuite.Geometries;
 using SurfScoutBackend.Models;
+using SurfScoutBackend.Models.WindFieldModel;
 
 namespace SurfScoutBackend.Data
 {
@@ -9,6 +10,8 @@ namespace SurfScoutBackend.Data
         public DbSet<User> users { get; set; }
         public DbSet<Spot> spots { get; set; }
         public DbSet<Session> sessions { get; set; }
+        public DbSet<WindField> wind_fields { get; set; }
+        public DbSet<WindFieldPoint> wind_field_points { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
@@ -20,6 +23,8 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Session>().ToTable("sessions");
             modelBuilder.Entity<Spot>().ToTable("spots");
+            modelBuilder.Entity<WindField>().ToTable("wind_fields");
+            modelBuilder.Entity<WindFieldPoint>().ToTable("wind_field_points");
 
             modelBuilder.Entity<Spot>()
                 .Property(s => s.Location)
@@ -36,6 +41,22 @@ namespace SurfScoutBackend.Data
                 .HasForeignKey(s => s.Spotid)
                 .IsRequired()
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<WindField>()
+                .HasOne(w => w.Session)
+                .WithMany(s => s.WindFields)
+                .HasForeignKey(w => w.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WindFieldPoint>()
+                .HasOne(p => p.WindField)
+                .WithMany(w => w.Points)
+                .HasForeignKey(p => p.WindFieldId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WindFieldPoint>()
+                .Property(p => p.Location)
+                .HasColumnType("geometry(Point,4326)");
         }
     }
 }

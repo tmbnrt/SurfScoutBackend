@@ -1,6 +1,7 @@
 ﻿using NetTopologySuite.IO;
 using NetTopologySuite.Geometries;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using SurfScoutBackend.Models.WindFieldModel;
 
 namespace SurfScoutBackend.Models
 {
@@ -20,5 +21,6 @@ namespace SurfScoutBackend.Models
         public double? WindDirectionDegree { get; set; }
         public int UserId { get; set; }                 // External key
         public User User { get; set; } = null!;         // Navigation property
+        public ICollection<WindField> WindFields { get; set; } = new List<WindField>();
     }
 }
