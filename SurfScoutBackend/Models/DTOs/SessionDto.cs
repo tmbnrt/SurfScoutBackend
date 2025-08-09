@@ -10,5 +10,6 @@
         public double Sail_size { get; set; }
         public int Rating { get; set; }
         public string Wave_height { get; set; }
+        public string Sport { get; set; }
     }
 }

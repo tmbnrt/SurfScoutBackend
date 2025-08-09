@@ -69,6 +69,7 @@ namespace SurfScoutBackend.Controllers
                 Date = dto.Date,
                 Spot = spot,
                 Spotid = dto.SpotId,
+                Sport = dto.Sport,
                 Tide = sessionsTide,
                 User = user,
                 UserId = dto.UserId,

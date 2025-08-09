@@ -7,5 +7,6 @@
         public string Role { get; set; } = "unknown";
         public string Password_hash { get; set; } = string.Empty;
         public List<Session> Sessions { get; set; } = new();
+        public string[] Sports { get; set; } = Array.Empty<string>();
     }
 }
