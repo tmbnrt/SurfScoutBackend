@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using SurfScoutBackend.Models.DTOs;
+using SurfScoutBackend.Functions;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -35,8 +36,10 @@ namespace SurfScoutBackend.Controllers
             if (existingUser != null)
                 return Conflict("User name already available.");
 
-            if (string.IsNullOrWhiteSpace(user.Password_hash))
-                return BadRequest("Password must not be empty.");
+            // Validate user data
+            string validationResult = CheckNewUserData.IsValidUserData(user);
+            if (validationResult != "valid")
+                return BadRequest(validationResult);
 
             // Hash password and save
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(user.Password_hash);
@@ -95,14 +98,18 @@ namespace SurfScoutBackend.Controllers
                 {
                     Id = user.Id,
                     Username = user.Username,
-                    Role = user.Role
+                    Role = user.Role,
+                    Sports = user.Sports
                 }
             };
 
             return Ok(response);
         }
 
-        // For Admins: Claim new Admins
+        // TODO: For Admins - Claim new Admins
+        // ...
+
+        // TODO: For User - Add new sports
         // ...
     }
 }
