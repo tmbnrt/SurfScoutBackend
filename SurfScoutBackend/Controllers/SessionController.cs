@@ -9,9 +9,7 @@ using NetTopologySuite;
 using NetTopologySuite.Geometries;
 using SurfScoutBackend.Models.DTOs;
 using SurfScoutBackend.Utilities;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 using SurfScoutBackend.Weather;
-using SurfScoutBackend.Utilities;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -45,15 +43,15 @@ namespace SurfScoutBackend.Controllers
             if (user == null)
                 return NotFound($"User with ID {dto.UserId} not found.");
 
-            // Get wind data from StormGlass API
+            // Get wind data for spot location from StormGlass API
             List<WindData> windDataList = await _weatherClient.GetWindAsync(spot.Location.Y, spot.Location.X,
                                                                             dto.Date, dto.StartTime, dto.EndTime);
 
             // Calculate averaged wind speed for session
             double averageSpeedInKnots = WeatherDataHelper.AverageWindSpeed(windDataList);
             double averageDirectionInDegree = WeatherDataHelper.AverageWindDirectionDegree(windDataList);
-
-            // Get tidal date from StormGlass API
+            
+            // Get tidal data from StormGlass API
             List<TideData> tideDataExtremes = await _weatherClient.GetTideExtremesAsync(spot.Location.Y,
                                                                                         spot.Location.X,
                                                                                         dto.Date);
