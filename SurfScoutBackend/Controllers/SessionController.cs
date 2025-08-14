@@ -10,6 +10,7 @@ using NetTopologySuite.Geometries;
 using SurfScoutBackend.Models.DTOs;
 using SurfScoutBackend.Utilities;
 using SurfScoutBackend.Weather;
+using SurfScoutBackend.Models.WindFieldModel;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -18,12 +19,15 @@ namespace SurfScoutBackend.Controllers
     public class SessionController : ControllerBase
     {
         private readonly AppDbContext _context;
-        private readonly StormglassWeatherClient _weatherClient;
+        private readonly StormglassWeatherClient _weatherClient_stormglass;
+        private readonly OpenMeteoWeatherClient _weatherClient_openmeteo;
 
-        public SessionController(AppDbContext context, StormglassWeatherClient weatherClient)
+        public SessionController(AppDbContext context, StormglassWeatherClient weatherClient_stormglass,
+                                                       OpenMeteoWeatherClient weatherClient_openmeteo)
         {
             this._context = context;
-            this._weatherClient = weatherClient;
+            this._weatherClient_stormglass = weatherClient_stormglass;
+            this._weatherClient_openmeteo = weatherClient_openmeteo;
         }
 
         [Authorize]
@@ -44,17 +48,16 @@ namespace SurfScoutBackend.Controllers
                 return NotFound($"User with ID {dto.UserId} not found.");
 
             // Get wind data for spot location from StormGlass API
-            List<WindData> windDataList = await _weatherClient.GetWindAsync(spot.Location.Y, spot.Location.X,
-                                                                            dto.Date, dto.StartTime, dto.EndTime);
+            List<WindData> windDataList = await _weatherClient_stormglass
+                .GetWindAsync(spot.Location.Y, spot.Location.X, dto.Date, dto.StartTime, dto.EndTime);
 
             // Calculate averaged wind speed for session
             double averageSpeedInKnots = WeatherDataHelper.AverageWindSpeed(windDataList);
             double averageDirectionInDegree = WeatherDataHelper.AverageWindDirectionDegree(windDataList);
             
             // Get tidal data from StormGlass API
-            List<TideData> tideDataExtremes = await _weatherClient.GetTideExtremesAsync(spot.Location.Y,
-                                                                                        spot.Location.X,
-                                                                                        dto.Date);
+            List<TideData> tideDataExtremes = await _weatherClient_stormglass
+                .GetTideExtremesAsync(spot.Location.Y, spot.Location.X, dto.Date);
 
             // Get tide info for the session
             string sessionsTide = TidalDataHelper.GetSessionTideAsString(tideDataExtremes, dto.Date, dto.StartTime, dto.EndTime);
@@ -81,6 +84,21 @@ namespace SurfScoutBackend.Controllers
             _context.sessions.Add(session);
             await _context.SaveChangesAsync();
 
+            // Call weather API and add wind fields to the session
+            if (spot.WindFetchPolygon != null)
+            {
+                List<WindField> historic_windfields = await _weatherClient_openmeteo
+                    .GetWindFieldAsync(spot, session.Id, session.Date, session.StartTime, session.EndTime);
+
+                // Set navigation property: session to wind field
+                foreach (WindField field in historic_windfields)
+                    field.Session = session;
+
+                // Add data to database
+                _context.wind_fields.AddRange(historic_windfields);
+                await _context.SaveChangesAsync();
+            }
+
             return Ok("Session saved successfully");
         }
 
@@ -105,5 +123,8 @@ namespace SurfScoutBackend.Controllers
 
             return Ok(sessions);
         }
+
+        // TODO: End point to return the wind field for a given session
+        // ...
     }
 }

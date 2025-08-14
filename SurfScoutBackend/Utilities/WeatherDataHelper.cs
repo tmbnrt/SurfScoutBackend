@@ -1,5 +1,6 @@
 ﻿using SurfScoutBackend.Models;
 using System.Diagnostics.Metrics;
+using SurfScoutBackend.Models.WindFieldModel;
 
 namespace SurfScoutBackend.Utilities
 {
@@ -31,6 +32,6 @@ namespace SurfScoutBackend.Utilities
             }
 
             return Math.Round((dirSum / counter), 1);
-        }
+        }        
     }
 }

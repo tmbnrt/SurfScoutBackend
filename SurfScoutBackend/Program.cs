@@ -74,6 +74,19 @@ builder.Services.AddControllers()
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Open Meteo weather client
+builder.Services.AddHttpClient("OpenMeteoClient", client =>
+{
+    client.BaseAddress = new Uri("https://api.open-meteo.com/");
+});
+builder.Services.AddTransient<OpenMeteoWeatherClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = factory.CreateClient("OpenMeteoClient");
+
+    return new OpenMeteoWeatherClient(httpClient);
+});
+
 // Stormglass weather client
 builder.Services.AddHttpClient("StormglassClient", client =>
 {
@@ -81,7 +94,6 @@ builder.Services.AddHttpClient("StormglassClient", client =>
     var apiKey = config["Stormglass:ApiKey"];
     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", apiKey);
 });
-
 builder.Services.AddTransient<StormglassWeatherClient>(sp =>
 {
     var factory = sp.GetRequiredService<IHttpClientFactory>();

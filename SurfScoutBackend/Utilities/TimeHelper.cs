@@ -30,5 +30,20 @@ namespace SurfScoutBackend.Utilities
             // Local time to UTC
             return TimeZoneInfo.ConvertTimeToUtc(localTime, tz);
         }
+
+        // Get time zone of location fo ropen meteo call, i.e. "Europe/Berlin"
+        public static string GetOpenMeteoTimezone(double longitude, double latitude)
+        {
+            var ianaZone = TimeZoneLookup.GetTimeZone(latitude, longitude).Result;
+
+            return ianaZone;
+        }
+
+        public static string GetOpenMeteoTimeStamp(DateOnly date, TimeOnly time)
+        {
+            string timestamp = $"{date:yyyy-MM-dd}T{time:HH\\:mm}";
+
+            return timestamp;
+        }
     }
 }
