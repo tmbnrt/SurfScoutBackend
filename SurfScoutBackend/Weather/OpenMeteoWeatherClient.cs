@@ -46,7 +46,8 @@ namespace SurfScoutBackend.Weather
                     timePoint_string.Add(TimeHelper.GetOpenMeteoTimeStamp(date, timePoint));
                     windFieldHistory.Add(new WindField
                     {
-                        TimeStamp = DateTime.SpecifyKind(date.ToDateTime(timePoint), DateTimeKind.Local),
+                        Timestamp = timePoint,
+                        Date = date,
                         SessionId = sessionId,
                         Session = null!,                            // Navigation property, will be set later
                         Points = new List<WindFieldPoint>()         // Initialize empty list for points

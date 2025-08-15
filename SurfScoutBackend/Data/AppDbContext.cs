@@ -10,8 +10,8 @@ namespace SurfScoutBackend.Data
         public DbSet<User> users { get; set; }
         public DbSet<Spot> spots { get; set; }
         public DbSet<Session> sessions { get; set; }
-        public DbSet<WindField> wind_fields { get; set; }
-        public DbSet<WindFieldPoint> wind_field_points { get; set; }
+        public DbSet<WindField> windfields { get; set; }
+        public DbSet<WindFieldPoint> windfieldpoints { get; set; }
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
@@ -23,8 +23,8 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<User>().ToTable("users");
             modelBuilder.Entity<Session>().ToTable("sessions");
             modelBuilder.Entity<Spot>().ToTable("spots");
-            modelBuilder.Entity<WindField>().ToTable("wind_fields");
-            modelBuilder.Entity<WindFieldPoint>().ToTable("wind_field_points");
+            modelBuilder.Entity<WindField>().ToTable("windfields");
+            modelBuilder.Entity<WindFieldPoint>().ToTable("windfieldpoints");
 
             modelBuilder.Entity<Spot>()
                 .Property(s => s.Location)

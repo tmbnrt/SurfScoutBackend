@@ -95,7 +95,7 @@ namespace SurfScoutBackend.Controllers
                     field.Session = session;
 
                 // Add data to database
-                _context.wind_fields.AddRange(historic_windfields);
+                _context.windfields.AddRange(historic_windfields);
                 await _context.SaveChangesAsync();
             }
 
