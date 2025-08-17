@@ -110,6 +110,34 @@ namespace SurfScoutBackend.Controllers
         // ...
 
         // TODO: For User - Add new sports
-        // ...
+        [HttpPut("{id}/addsport")]
+        public async Task<IActionResult> AddSport(int id, [FromBody] string newSport)
+        {
+            if (string.IsNullOrWhiteSpace(newSport))
+                return BadRequest("Input is empty.");
+
+            if (newSport != "Windsurfing" && newSport != "Kitesurfing" && newSport != "Wingfoiling")
+                return BadRequest("Sport not available.");
+
+            var user = await _context.users.FindAsync(id);
+            if (user == null)
+                return NotFound($"User with ID {id} not found.");
+
+            if (user.Sports.Contains(newSport))
+                return BadRequest($"Sport '{newSport}' already exists for user {user.Username}.");
+
+            // Add new sport to user
+            var sportsList = user.Sports.ToList();
+            sportsList.Add(newSport);
+            user.Sports = sportsList.ToArray();
+            _context.users.Update(user);
+            await _context.SaveChangesAsync();
+            return Ok(new
+            {
+                message = $"Sport '{newSport}' added to user {user.Username}.",
+                userId = user.Id,
+                sports = user.Sports
+            });
+        }
     }
 }
