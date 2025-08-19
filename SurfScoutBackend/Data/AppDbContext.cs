@@ -8,6 +8,7 @@ namespace SurfScoutBackend.Data
     public class AppDbContext : DbContext
     {
         public DbSet<User> users { get; set; }
+        public DbSet<UserConnection> userConnections { get; set; }
         public DbSet<Spot> spots { get; set; }
         public DbSet<Session> sessions { get; set; }
         public DbSet<WindField> windfields { get; set; }
@@ -25,6 +26,23 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<Spot>().ToTable("spots");
             modelBuilder.Entity<WindField>().ToTable("windfields");
             modelBuilder.Entity<WindFieldPoint>().ToTable("windfieldpoints");
+
+            modelBuilder.Entity<UserConnection>().ToTable("userconnections");
+
+            modelBuilder.Entity<UserConnection>()
+                .HasKey(uc => new { uc.RequesterId, uc.AddresseeId });
+
+            modelBuilder.Entity<UserConnection>()
+                .HasOne(uc => uc.Requester)
+                .WithMany()
+                .HasForeignKey(uc => uc.RequesterId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<UserConnection>()
+                .HasOne(uc => uc.Addressee)
+                .WithMany()
+                .HasForeignKey(uc => uc.AddresseeId)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Spot>()
                 .Property(s => s.Location)
