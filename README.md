@@ -3,7 +3,7 @@
 **SurfScout** is an ASP.NET Core-based Web API project for managing surf sessions, surf spots, and user accounts.
 The backend uses modern authentication and database technologies and is visualized on the client side through a **WPF desktop application with ArcGIS integration**.
 
-> ⚠️ This project is under active development and serves as a hands-on learning initiative for gaining experience with geoinformation systems and weather data integration and analysis.
+> ⚠️ _This project is actively under development. Features, architecture, and visuals are subject to refinement._
 
 ---
 
@@ -18,17 +18,6 @@ The long-term goal is to **identify historical patterns and understand how they 
 
 ---
 
-## 🎓 Learning Goals & Motivation
-
-This project is designed as a training platform to explore and combine the following technologies and concepts in practice:
- 
-- 🗄️ **PosiGIS** – Geospatial data modeling and integration in postgreSQL
-- ☁️ **Weather APIs** – Connecting to meteorological services (e.g., wind fields)
-- 🌀 **Marine Data APIs** – Connecting to marine services (e.g., tidal data)
-- 📍 **ArcGIS** – Visualizing wind data and locations in the WPF client
-
----
-
 ## 🚀 Current Features
 
 - ✅ User registration and JWT-based authentication
@@ -38,13 +27,14 @@ This project is designed as a training platform to explore and combine the follo
 - ✅ PostGIS (postgreSQL) integration via Entity Framework Core
 - ✅ Integration of weather and marine information API `[stormglass.io]`
 - ✅ WPF client with map integration currently in progress
+- ✅ Historic windfield generation by access to external weather API open-meteo
 
 ---
 
 ## 🛠️ Technologies Used
 
-| Category         | Technology                             |
-|------------------|-----------------------------------------|
+| Category          | Technology                             |
+|-------------------|----------------------------------------|
 | Language          | C# (.NET 8)                            |
 | Backend           | ASP.NET Core Web API                   |
 | Authentication    | JWT (JSON Web Token), BCrypt           |

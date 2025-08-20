@@ -33,7 +33,19 @@ namespace SurfScoutBackend.Controllers
             if (pendingConnections == null || !pendingConnections.Any())
                 return NotFound("No pending connection requests found.");
 
-            return Ok(pendingConnections);
+            List<UserConnectionDto> pendingConnectionsDto = new List<UserConnectionDto>();
+            foreach (var connection in pendingConnections)
+            {
+                pendingConnectionsDto.Add(new UserConnectionDto
+                {
+                    RequesterId = connection.RequesterId,
+                    AddresseeId = connection.AddresseeId,
+                    RequesterUsername = connection.Requester?.Username!,
+                    AddresseeUsername = connection.Addressee?.Username!
+                });
+            }
+
+            return Ok(pendingConnectionsDto);
         }
 
         // Endpoint to create a new user connection request
@@ -50,6 +62,7 @@ namespace SurfScoutBackend.Controllers
             // Check if addressee name exists
             var addressee = await _context.users
                 .FirstOrDefaultAsync(u => u.Username == connection.AddresseeUsername);
+
             if (addressee == null)
                 return NotFound($"User with username {connection.AddresseeUsername} not found.");
 
@@ -87,6 +100,49 @@ namespace SurfScoutBackend.Controllers
             return Ok(new_connection);
         }
 
+        // Endpoint to reject request
+        [Authorize]
+        [HttpPost("rejectrequest")]
+        public async Task<IActionResult> RejectConnectionRequest([FromBody] UserConnectionDto connection)
+        {
+            // REMARK: In this case, the authenticated user is the addressee of the connection request
+            if (_context == null)
+                return StatusCode(500, "Database context not initialized.");
+
+            if (String.IsNullOrEmpty(connection.RequesterUsername) || String.IsNullOrEmpty(connection.AddresseeUsername))
+                return BadRequest("Requester and addressee names must be valid.");
+
+            // Check if requester name exists
+            var requester = await _context.users
+                .FirstOrDefaultAsync(u => u.Username == connection.RequesterUsername);
+
+            if (requester == null)
+                return NotFound($"Requester with username {connection.RequesterUsername} not found.");
+
+            // Check if the connection exists
+            int addresseeId = connection.AddresseeId;
+            int requesterId = requester.Id;
+
+            // Follow the rule for requester and addressee IDs (swap if necessary)
+            if (requesterId > addresseeId)
+            {
+                int temp = requesterId;
+                requesterId = addresseeId;
+                addresseeId = temp;
+            }
+            var existingConnection = await _context.userConnections
+                .FirstOrDefaultAsync(uc => uc.RequesterId == requesterId && uc.AddresseeId == addresseeId);
+
+            if (existingConnection == null || existingConnection.Status != "pending")
+                return NotFound("Connection request not found or already accepted/rejected.");
+
+            existingConnection.Status = "rejected";
+
+            await _context.SaveChangesAsync();
+
+            return Ok(existingConnection);
+        }
+
         // Endpoint to accept a user connection request
         [Authorize]
         [HttpPost("acceptrequest")]
@@ -107,7 +163,7 @@ namespace SurfScoutBackend.Controllers
 
             // Check if the connection exists
             int addresseeId = connection.AddresseeId;
-            int requesterId = connection.RequesterId;
+            int requesterId = requester.Id;
 
             // Follow the rule for requester and addressee IDs (swap if necessary)
             if (requesterId > addresseeId)
