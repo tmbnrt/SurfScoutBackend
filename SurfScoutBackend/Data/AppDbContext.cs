@@ -8,7 +8,7 @@ namespace SurfScoutBackend.Data
     public class AppDbContext : DbContext
     {
         public DbSet<User> users { get; set; }
-        public DbSet<UserConnection> userConnections { get; set; }
+        public DbSet<UserConnection> userconnections { get; set; }
         public DbSet<Spot> spots { get; set; }
         public DbSet<Session> sessions { get; set; }
         public DbSet<WindField> windfields { get; set; }

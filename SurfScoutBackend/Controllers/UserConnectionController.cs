@@ -26,12 +26,18 @@ namespace SurfScoutBackend.Controllers
             if (_context == null)
                 return StatusCode(500, "Database context not initialized.");
 
-            var pendingConnections = await _context.userConnections
+            var pendingConnections = await _context.userconnections
                 .Where(uc => uc.AddresseeId == userId && uc.Status == "pending")
                 .ToListAsync();
 
             if (pendingConnections == null || !pendingConnections.Any())
                 return NotFound("No pending connection requests found.");
+
+            // Get users by Id
+            var requester = await _context.users
+                .Where(u => u.Id == pendingConnections.FirstOrDefault()!.RequesterId).FirstOrDefaultAsync();
+            var addressee = await _context.users
+                .Where(u => u.Id == userId).FirstOrDefaultAsync();
 
             List<UserConnectionDto> pendingConnectionsDto = new List<UserConnectionDto>();
             foreach (var connection in pendingConnections)
@@ -40,8 +46,8 @@ namespace SurfScoutBackend.Controllers
                 {
                     RequesterId = connection.RequesterId,
                     AddresseeId = connection.AddresseeId,
-                    RequesterUsername = connection.Requester?.Username!,
-                    AddresseeUsername = connection.Addressee?.Username!
+                    RequesterUsername = requester!.Username,
+                    AddresseeUsername = addressee!.Username
                 });
             }
 
@@ -78,7 +84,7 @@ namespace SurfScoutBackend.Controllers
                 addresseeId = temp;
             }
 
-            var existingConnection = await _context.userConnections
+            var existingConnection = await _context.userconnections
                 .FirstOrDefaultAsync(uc => uc.RequesterId == requesterId && uc.AddresseeId == addresseeId);
 
             if (existingConnection != null)
@@ -93,7 +99,7 @@ namespace SurfScoutBackend.Controllers
                 RequestDate = DateTime.UtcNow
             };
 
-            _context.userConnections.Add(new_connection);
+            _context.userconnections.Add(new_connection);
 
             await _context.SaveChangesAsync();
 
@@ -130,7 +136,7 @@ namespace SurfScoutBackend.Controllers
                 requesterId = addresseeId;
                 addresseeId = temp;
             }
-            var existingConnection = await _context.userConnections
+            var existingConnection = await _context.userconnections
                 .FirstOrDefaultAsync(uc => uc.RequesterId == requesterId && uc.AddresseeId == addresseeId);
 
             if (existingConnection == null || existingConnection.Status != "pending")
@@ -172,7 +178,7 @@ namespace SurfScoutBackend.Controllers
                 requesterId = addresseeId;
                 addresseeId = temp;
             }
-            var existingConnection = await _context.userConnections
+            var existingConnection = await _context.userconnections
                 .FirstOrDefaultAsync(uc => uc.RequesterId == requesterId && uc.AddresseeId == addresseeId);
 
             if (existingConnection == null || existingConnection.Status != "pending")
