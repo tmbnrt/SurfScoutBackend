@@ -191,5 +191,58 @@ namespace SurfScoutBackend.Controllers
             
             return Ok(existingConnection);
         }
+
+        // Endpoint to get all user connections for the authenticated user
+        [Authorize]
+        [HttpGet("getconnections")]
+        public async Task<IActionResult> GetAllConnections([FromQuery] int? userId)
+        {
+            if (_context == null)
+                return StatusCode(500, "Database context not initialized.");
+
+            if (userId == null || userId <= 0)
+                return BadRequest("User ID must be valid.");
+
+            var connections = await _context.userconnections
+                .Where(uc => (uc.AddresseeId == userId || uc.RequesterId == userId) && uc.Status == "accepted")
+                .ToListAsync();
+
+            if (connections == null || !connections.Any())
+                return NotFound("No connections found for the user.");
+
+            // Get users by Id
+            var requesterUsers = await _context.users
+                .Where(u => connections.Select(c => c.RequesterId).Contains(u.Id)).ToListAsync();
+
+            var addresseeUsers = await _context.users
+                .Where(u => connections.Select(c => c.AddresseeId).Contains(u.Id)).ToListAsync();
+
+            // Combine requesters and addressees in a single list
+            //var relevantUsers = requesterUsers.Concat(addresseeUsers).Distinct().ToList();
+
+            // Create a list of friends (of FriendDto)
+            List<FriendDto> friends = new List<FriendDto>();
+            foreach (var connection in connections)
+            {
+                if (connection.RequesterId == userId)
+                {
+                    friends.Add(new FriendDto
+                    {
+                        Id = connection.AddresseeId,
+                        Name = addresseeUsers.FirstOrDefault(u => u.Id == connection.AddresseeId)?.Username ?? "Unknown"
+                    });
+                }
+                else if (connection.AddresseeId == userId)
+                {
+                    friends.Add(new FriendDto
+                    {
+                        Id = connection.RequesterId,
+                        Name = requesterUsers.FirstOrDefault(u => u.Id == connection.RequesterId)?.Username ?? "Unknown"
+                    });
+                }
+            }
+
+            return Ok(friends);
+        }
     }
 }

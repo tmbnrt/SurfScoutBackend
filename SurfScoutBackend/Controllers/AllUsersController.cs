@@ -23,7 +23,7 @@ namespace SurfScoutBackend.Controllers
         }
 
         // Endpoint to get all registered users
-        [Authorize]
+        [Authorize(Roles = "Admin")]
         [HttpGet("getallusers")]
         public async Task<IActionResult> GetAllUsers()
         {

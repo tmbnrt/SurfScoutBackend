@@ -27,6 +27,7 @@ namespace SurfScoutBackend.Controllers
         }
 
         // End point to add new spots to database
+        [Authorize]
         [HttpPost("sync")]
         public async Task<IActionResult> SyncSpots([FromBody] List<Spot> incomingSpots)
         {
@@ -81,8 +82,8 @@ namespace SurfScoutBackend.Controllers
         }
 
         // Endpoint to return all available spot locations to client
+        [Authorize]
         [HttpGet("locations")]
-        [AllowAnonymous]
         public async Task<IActionResult> GetAllSpots()
         {
             //var spots = await _context.spots
