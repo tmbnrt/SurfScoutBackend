@@ -105,16 +105,37 @@ namespace SurfScoutBackend.Controllers
         // Returns user sessions for a given spot by Id
         [Authorize]
         [HttpGet("spotsessions")]
-        public async Task<IActionResult> GetUserSessions([FromQuery] int? spotId)
+        public async Task<IActionResult> GetUserSessions([FromQuery] int? userId, [FromQuery] int? spotId)
         {
             if (spotId == null || spotId <= 0)
                 return BadRequest("Spot ID is not valid!");
 
+            if (userId == null || userId <= 0)
+                return BadRequest("User ID is not valid!");
+
             if (_context == null)
                 return StatusCode(500, "Database context not initialized.");
 
+            // Check if user id is admin
+            var user = await _context.users.FindAsync(userId);
+            if (user == null)
+                return NotFound($"User with ID '{userId}' not found.");
+
+            bool isAdmin = User.IsInRole("Admin");
+
             var query = _context.sessions
                 .Where(s => s.Spotid == spotId);
+
+            // Filter query to connected users and the user itself
+            if (!isAdmin)
+            {
+                var connectionIds = await _context.userconnections
+                    .Where(uc => (uc.RequesterId == userId || uc.AddresseeId == userId) && uc.Status == "accepted")
+                    .Select(uc => uc.RequesterId == userId ? uc.AddresseeId : uc.RequesterId)
+                    .ToListAsync();
+                
+                query = query.Where(s => s.UserId == userId || connectionIds.Contains(s.UserId));
+            }
 
             var sessions = await query.ToListAsync();
 

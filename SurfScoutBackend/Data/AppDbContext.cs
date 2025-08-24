@@ -86,11 +86,30 @@ namespace SurfScoutBackend.Data
                 .HasForeignKey(sp => sp.SessionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<PlannedSession>()
+                .Property(p => p.Date)
+                .HasColumnType("date")
+                .HasConversion(
+                    v => v.ToDateTime(TimeOnly.MinValue),
+                    v => DateOnly.FromDateTime(v));
+
             modelBuilder.Entity<SessionParticipant>()
                 .HasOne<User>()
                 .WithMany()
                 .HasForeignKey(sp => sp.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SessionParticipant>()
+                .Property(p => p.StartTime)
+                .HasConversion(
+                    v => v.ToTimeSpan(), // nur Uhrzeit
+                    v => TimeOnly.FromTimeSpan(v));
+
+            modelBuilder.Entity<SessionParticipant>()
+                .Property(p => p.EndTime)
+                .HasConversion(
+                    v => v.ToTimeSpan(),
+                    v => TimeOnly.FromTimeSpan(v));
         }
     }
 }
