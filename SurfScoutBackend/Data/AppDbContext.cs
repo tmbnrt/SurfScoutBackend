@@ -13,6 +13,9 @@ namespace SurfScoutBackend.Data
         public DbSet<Session> sessions { get; set; }
         public DbSet<WindField> windfields { get; set; }
         public DbSet<WindFieldPoint> windfieldpoints { get; set; }
+        public DbSet<PlannedSession> plannedsessions { get; set; }
+        public DbSet<SessionParticipant> sessionparticipants { get; set; }
+
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
         {
@@ -26,8 +29,9 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<Spot>().ToTable("spots");
             modelBuilder.Entity<WindField>().ToTable("windfields");
             modelBuilder.Entity<WindFieldPoint>().ToTable("windfieldpoints");
-
             modelBuilder.Entity<UserConnection>().ToTable("userconnections");
+            modelBuilder.Entity<PlannedSession>().ToTable("plannedsessions");
+            modelBuilder.Entity<SessionParticipant>().ToTable("sessionparticipants");
 
             modelBuilder.Entity<UserConnection>()
                 .HasKey(uc => new { uc.RequesterId, uc.AddresseeId });
@@ -75,6 +79,18 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<WindFieldPoint>()
                 .Property(p => p.Location)
                 .HasColumnType("geometry(Point,4326)");
+
+            modelBuilder.Entity<PlannedSession>()
+                .HasMany(p => p.Participants)
+                .WithOne()
+                .HasForeignKey(sp => sp.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<SessionParticipant>()
+                .HasOne<User>()
+                .WithMany()
+                .HasForeignKey(sp => sp.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }
