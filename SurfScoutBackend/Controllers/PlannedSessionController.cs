@@ -56,7 +56,7 @@ namespace SurfScoutBackend.Controllers
             var plannedSessions = await _context.plannedsessions
                 .Include(ps => ps.Participants)
                 .Where(ps => ps.Participants.Any(p => p.UserId == userId))
-                .Where(ps => ps.Date >= DateOnly.FromDateTime(DateTime.Today))
+                .Where(ps => ps.Date < DateOnly.FromDateTime(DateTime.Today))
                 .ToListAsync();
 
             if (!plannedSessions.Any())
