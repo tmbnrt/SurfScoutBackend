@@ -221,23 +221,25 @@ namespace SurfScoutBackend.Controllers
             //var relevantUsers = requesterUsers.Concat(addresseeUsers).Distinct().ToList();
 
             // Create a list of friends (of FriendDto)
-            List<FriendDto> friends = new List<FriendDto>();
+            List<UserDto> friends = new List<UserDto>();
             foreach (var connection in connections)
             {
                 if (connection.RequesterId == userId)
                 {
-                    friends.Add(new FriendDto
+                    friends.Add(new UserDto
                     {
                         Id = connection.AddresseeId,
-                        Name = addresseeUsers.FirstOrDefault(u => u.Id == connection.AddresseeId)?.Username ?? "Unknown"
+                        Username = addresseeUsers.FirstOrDefault(u => u.Id == connection.AddresseeId)?.Username ?? "Unknown"
                     });
                 }
                 else if (connection.AddresseeId == userId)
                 {
-                    friends.Add(new FriendDto
+                    friends.Add(new UserDto
                     {
                         Id = connection.RequesterId,
-                        Name = requesterUsers.FirstOrDefault(u => u.Id == connection.RequesterId)?.Username ?? "Unknown"
+                        Username = requesterUsers.FirstOrDefault(u => u.Id == connection.RequesterId)?.Username ?? "Unknown",
+                        Role = null,
+                        Sports = null
                     });
                 }
             }

@@ -11,6 +11,7 @@ using SurfScoutBackend.Models.DTOs;
 using SurfScoutBackend.Utilities;
 using SurfScoutBackend.Weather;
 using SurfScoutBackend.Models.WindFieldModel;
+using SurfScoutBackend.Functions;
 
 namespace SurfScoutBackend.Controllers
 {
@@ -139,10 +140,12 @@ namespace SurfScoutBackend.Controllers
 
             var sessions = await query.ToListAsync();
 
-            if (!sessions.Any())
+            var sessionDtos = DtoMapper.SessionToDtoList(sessions);
+
+            if (!sessionDtos.Any())
                 return NotFound($"No sessions found for spot ID '{spotId}'.");
 
-            return Ok(sessions);
+            return Ok(sessionDtos);
         }
 
         // TODO: End point to return the wind field for a given session
