@@ -7,6 +7,7 @@ using System.Text;
 using Npgsql;
 using SurfScoutBackend.Data;
 using SurfScoutBackend.Weather;
+using SurfScoutBackend.BackgroundTasks;
 using System.Net.Http.Headers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,7 +55,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();            // later: for roles and policies (admin, etc.)
+builder.Services.AddAuthorization();
+
+// Backgroundservice for polling wind forecast data
+builder.Services.AddHostedService<WindForecastPoller>();
 
 // Add services to container
 builder.Services.AddDbContext<AppDbContext>(options =>

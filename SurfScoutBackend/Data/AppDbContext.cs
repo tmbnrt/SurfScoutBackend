@@ -15,6 +15,7 @@ namespace SurfScoutBackend.Data
         public DbSet<WindFieldPoint> windfieldpoints { get; set; }
         public DbSet<PlannedSession> plannedsessions { get; set; }
         public DbSet<SessionParticipant> sessionparticipants { get; set; }
+        public DbSet<WindForecast> windforecasts { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options)
             : base(options)
@@ -102,7 +103,7 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<SessionParticipant>()
                 .Property(p => p.StartTime)
                 .HasConversion(
-                    v => v.ToTimeSpan(), // nur Uhrzeit
+                    v => v.ToTimeSpan(),    // time only
                     v => TimeOnly.FromTimeSpan(v));
 
             modelBuilder.Entity<SessionParticipant>()
@@ -110,6 +111,12 @@ namespace SurfScoutBackend.Data
                 .HasConversion(
                     v => v.ToTimeSpan(),
                     v => TimeOnly.FromTimeSpan(v));
+
+            modelBuilder.Entity<WindForecast>()
+                .HasOne(w => w.PlannedSession)
+                .WithMany(p => p.WindForecasts)
+                .HasForeignKey(w => w.SessionID)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
