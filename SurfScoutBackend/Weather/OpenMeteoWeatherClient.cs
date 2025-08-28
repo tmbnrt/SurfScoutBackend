@@ -59,7 +59,6 @@ namespace SurfScoutBackend.Weather
             string formattedDate = date.ToString("yyyy-MM-dd");
             string timezone = TimeHelper.GetOpenMeteoTimezone(spot.Location.X, spot.Location.Y);
 
-            // TODO: Problem: iterating ove rpoints first, but points are inner instances. Timestamp is outer instance
             foreach (var point in points)
             {
                 string lng = point.X.ToString(CultureInfo.InvariantCulture);
@@ -107,6 +106,54 @@ namespace SurfScoutBackend.Weather
             }
 
             return windFieldHistory;
+        }
+
+        public async Task<List<WindData>> ForcastDataByModelAsync(double lng, double lat, string timezone, DateOnly date, string model)
+        {
+            string formattedDate = date.ToString("yyyy-MM-dd");
+
+            try
+            {
+                var url = $"https://api.open-meteo.com/v1/forecast?" +
+                      $"latitude={lat}&longitude={lng}" +
+                      $"&hourly=wind_speed_10m,wind_direction_10m" +
+                      $"&start_date={formattedDate}&end_date={formattedDate}" +
+                      $"&timezone={timezone}&model={model}";
+
+                var response = await _httpClient.GetAsync(url);
+                var json = await response.Content.ReadAsStringAsync();
+
+                // Store results in list
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+                var hourly = root.GetProperty("hourly");
+                var timeArray = hourly.GetProperty("time");
+                var windSpeedArray = hourly.GetProperty("wind_speed_10m");
+                var windDirectionArray = hourly.GetProperty("wind_direction_10m");
+
+                List<WindData> windDataList = new List<WindData>();
+
+                foreach (var time in timeArray.EnumerateArray())
+                {
+                    int index = timeArray.EnumerateArray().ToList().IndexOf(time);
+                    double windSpeed_knots = windSpeedArray[index].GetDouble() * 0.53996;   // Convert kmh in knots
+                    double windDirection_degree = windDirectionArray[index].GetDouble();
+
+                    windDataList.Add(new WindData
+                    {
+                        Timestamp = DateTime.Parse(time.GetString()!),
+                        Model = model,
+                        SpeedInKnots = windSpeed_knots,
+                        DirectionInDegrees = windDirection_degree
+                    });
+                }
+
+                return windDataList;
+            }
+            catch
+            {
+                return null!;
+            }
         }
     }
 }

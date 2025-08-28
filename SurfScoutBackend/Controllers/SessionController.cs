@@ -106,7 +106,7 @@ namespace SurfScoutBackend.Controllers
         // Returns user sessions for a given spot by Id
         [Authorize]
         [HttpGet("spotsessions")]
-        public async Task<IActionResult> GetUserSessions([FromQuery] int? userId, [FromQuery] int? spotId)
+        public async Task<IActionResult> GetUserSessionsForSpot([FromQuery] int? userId, [FromQuery] int? spotId)
         {
             if (spotId == null || spotId <= 0)
                 return BadRequest("Spot ID is not valid!");
