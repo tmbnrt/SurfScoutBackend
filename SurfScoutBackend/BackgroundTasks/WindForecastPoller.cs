@@ -30,11 +30,11 @@ namespace SurfScoutBackend.BackgroundTasks
                 using var scope = _scopeFactory.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
-                await StoreForecastForPlannedSessionsAsync(context);
-
-                // Delay logic: Calculate next full 3-hour interval
                 var now = DateTime.UtcNow;
 
+                await StoreForecastForPlannedSessionsAsync(context, now);
+
+                // Delay logic: Calculate next full 3-hour interval
                 // Next full 3-hour step
                 var nextRunHour = ((now.Hour / 3) + 1) * 3;
 
@@ -50,14 +50,12 @@ namespace SurfScoutBackend.BackgroundTasks
             }
         }
 
-        private async Task StoreForecastForPlannedSessionsAsync(AppDbContext context)
+        private async Task StoreForecastForPlannedSessionsAsync(AppDbContext context, DateTime requestTime)
         {
             // Call all planned sessions from the database that are not in the past
             var plannedSessions = await context.plannedsessions
                 .Where(ps => ps.Date >= DateOnly.FromDateTime(DateTime.Today))
                 .ToListAsync();
-
-
 
             // Define wind models to be called from open-meteo
             string[] models = ["gfs", "icon", "ecmwf", "meteofrance_arome", "meteofrance_arpege", "noaa_hrrr", "dwd_icon_d2"];
@@ -65,7 +63,7 @@ namespace SurfScoutBackend.BackgroundTasks
             // For each planned session, call the weather API and store the forecast data
             foreach (var session in plannedSessions)
             {
-                // get spot locations (longitude, latitude)
+                // Get spot locations (longitude, latitude)
                 var spot = await context.spots.FindAsync(session.SpotId);
                 if (spot == null)
                     continue;
@@ -77,31 +75,33 @@ namespace SurfScoutBackend.BackgroundTasks
 
                 foreach (var model in models)
                 {
-                    var url = $"https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lng}&hourly=wind_speed_10m,wind_direction_10m&model={model}";
-
                     // Call open-meteo API
                     var windData = await _weatherClient_openmeteo.ForcastDataByModelAsync(lng, lat, timezone, date, model);
                     if (windData.IsNullOrEmpty())
                         continue;
 
-                    // Store wind data in the database
-                    // ... CHALLENGE: windData contains the full day hourly --> plannedSessions can contain multiple sessions by different users.
-                    // The table should include a list for 17 timestamps (from 6am to 10pm)
-                    // TODO: reduce windData to relevant timestamps only
+                    // Delete the first 6 entries and the last entry to reduce data to 6am to 10pm only
+                    windData.RemoveRange(0, 6);
+                    windData.RemoveAt(windData.Count - 1);
+
+                    foreach (var dataset in windData)
+                    {
+                        // add to the windforecasts table
+                        var windForecast = new WindForecast
+                        {
+                            SessionId = session.Id,
+                            RequestTime = requestTime,
+                            Timestamp = dataset.Timestamp,
+                            WindspeedKnots = dataset.SpeedInKnots,
+                            Direction = dataset.DirectionInDegrees,
+                            Model = model
+                        };
+                        context.windforecasts.Add(windForecast);
+                    }
                 }
 
-                // Open-meteo delivers forecast data in UTC time
-                // --> Conversion to spot location required to store in local time
-                // ...
-
-                // table including foracast data (windspeed / direction): windforecasts
-                // ...
+                await context.SaveChangesAsync();
             }
-
-
-
-
-
 
             await Task.CompletedTask;
         }

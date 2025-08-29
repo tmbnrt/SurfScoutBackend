@@ -115,7 +115,7 @@ namespace SurfScoutBackend.Data
             modelBuilder.Entity<WindForecast>()
                 .HasOne(w => w.PlannedSession)
                 .WithMany(p => p.WindForecasts)
-                .HasForeignKey(w => w.SessionID)
+                .HasForeignKey(w => w.SessionId)
                 .OnDelete(DeleteBehavior.Cascade);
         }
     }
