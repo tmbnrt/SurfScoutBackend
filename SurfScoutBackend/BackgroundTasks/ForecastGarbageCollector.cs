@@ -29,6 +29,9 @@ namespace SurfScoutBackend.BackgroundTasks
                 // Cleanup old forecasts
                 await CleanupOldForecastsAsync(context, now);
 
+                // Cleanup unrated session that are in the past
+                await CleanupOldSessionPlansAsync(context, now);
+
                 // Delay logic: repeat on the next day
                 var nextRunDate = now.Date.AddDays(1);
                 var nextRun = new DateTime(
@@ -45,7 +48,22 @@ namespace SurfScoutBackend.BackgroundTasks
         // Function to cleanup forecasts. But keep the forecasts for the rated sessions a the specific time.
         private async Task CleanupOldForecastsAsync(AppDbContext context, DateTime now)
         {
-            // TODO: Cleanup logic
+            // Idea: Delete all planned session forecasts that are 30 days in the past and not rated
+            // There should only be one forecast for that day, available for all users that know the spot
+
+            
+
+            // Call all planned sessions from the database that are not in the past
+            var plannedSessions = await context.plannedsessions
+                .Where(ps => ps.Date >= DateOnly.FromDateTime(DateTime.Today))
+                .ToListAsync();
+
+
+        }
+
+        private async Task CleanupOldSessionPlansAsync(AppDbContext context, DateTime now)
+        {
+            // TODO: Implement unrated session cleaner
             // ...
         }
     }
