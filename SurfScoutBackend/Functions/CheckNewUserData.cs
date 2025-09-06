@@ -14,6 +14,9 @@ namespace SurfScoutBackend.Functions
             if (!IsValidEmail(user.Email))
                 return "Email is not valid.";
 
+            if (!PasswordIsSave(user.Password_hash))
+                return "Password must contain at least 8 digits, numeric and upper/lower case.";
+
             // Check if password hash is empty or null
             if (string.IsNullOrWhiteSpace(user.Password_hash))
                 return "Password must not be empty.";
@@ -39,6 +42,20 @@ namespace SurfScoutBackend.Functions
             {
                 return false;
             }
+        }
+
+        public static bool PasswordIsSave(string password)
+        {
+            if (password.Length < 8)
+                return false;
+
+            if (!password.Any(char.IsDigit))
+                return false;
+
+            if (!password.Any(char.IsUpper) || !password.Any(char.IsLower))
+                return false;
+
+            return true;
         }
     }
 }

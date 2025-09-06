@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SurfScoutBackend.Data;
 using SurfScoutBackend.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using BCrypt.Net;
 using Microsoft.Extensions.Configuration.UserSecrets;
@@ -104,6 +105,34 @@ namespace SurfScoutBackend.Controllers
             };
 
             return Ok(response);
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPut("changepassword")]
+        public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto dto)
+        {
+            if (string.IsNullOrWhiteSpace(dto.NewPassword))
+                return BadRequest("New password is empty.");
+
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (!int.TryParse(userIdClaim, out int userId))
+                return Unauthorized("Invalid user token.");
+
+            var user = await _context.users.FindAsync(userId);
+            if (user == null)
+                return NotFound("User not found.");
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.CurrentPassword, user.Password_hash))
+                return Unauthorized("Current password is incorrect.");
+
+            if (!CheckNewUserData.PasswordIsSave(dto.NewPassword))
+                return BadRequest("Password must contain at least 8 characters, including numeric, uppercase and lowercase letters.");
+
+            user.Password_hash = BCrypt.Net.BCrypt.HashPassword(dto.NewPassword);
+            _context.users.Update(user);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Password has been changed successfully." });
         }
 
         // TODO: For Admins - Claim new Admins
