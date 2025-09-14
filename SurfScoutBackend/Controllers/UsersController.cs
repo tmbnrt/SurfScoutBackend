@@ -47,10 +47,12 @@ namespace SurfScoutBackend.Controllers
             user.Password_hash = hashedPassword;
 
             _context.users.Add(user);
-            await _context.SaveChangesAsync();          // User to database
+
+            await _context.SaveChangesAsync();
 
             // Do not return password in clear text
             user.Password_hash = null;
+
             return Ok();
         }
 
@@ -135,10 +137,27 @@ namespace SurfScoutBackend.Controllers
             return Ok(new { message = "Password has been changed successfully." });
         }
 
-        // TODO: For Admins - Claim new Admins
-        // ...
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme, Roles = "Admin")]
+        [HttpPut("claimadmin")]
+        public async Task<IActionResult> ClaimAdmin([FromBody] int userId)
+        {
+            var user = await _context.users.FindAsync(userId);
 
-        // TODO: For User - Add new sports
+            if (user == null)
+                return NotFound($"User with ID {userId} not found.");
+
+            if (user.Role == "Admin")
+                return BadRequest($"User {user.Username} is already an admin.");
+
+            user.Role = "Admin";
+
+            _context.users.Update(user);
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"User {user.Username} has now admin rights." });
+        }
+
         [HttpPut("{id}/addsport")]
         public async Task<IActionResult> AddSport(int id, [FromBody] string newSport)
         {
@@ -149,6 +168,7 @@ namespace SurfScoutBackend.Controllers
                 return BadRequest("Sport not available.");
 
             var user = await _context.users.FindAsync(id);
+
             if (user == null)
                 return NotFound($"User with ID {id} not found.");
 
