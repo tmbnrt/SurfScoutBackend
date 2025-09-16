@@ -135,7 +135,7 @@ namespace SurfScoutBackend.Controllers
             if (spot == null)
                 return NotFound();
 
-            Polygon? polygon = GeoDataHelper.CreatePolygonFromDto(dto.Geometry);
+            Polygon? polygon = GeoDataFunctions.CreatePolygonFromDto(dto.Geometry);
 
             spot.WindFetchPolygon = polygon;
 
@@ -167,7 +167,7 @@ namespace SurfScoutBackend.Controllers
             if (polygon == null)
                 return NotFound("No wind fetch field set for current spot.");
 
-            GeoJsonDto dto = GeoDataHelper.CreateDtoFromPolygon(polygon);
+            GeoJsonDto dto = GeoDataFunctions.CreateDtoFromPolygon(polygon);
 
             return Ok(dto);
         }

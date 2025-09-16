@@ -29,7 +29,6 @@ namespace SurfScoutBackend.Controllers
 
         private readonly IConfiguration _config;
 
-        // New user registration endpoint
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] User user)
         {

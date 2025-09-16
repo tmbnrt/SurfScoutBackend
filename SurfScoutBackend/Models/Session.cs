@@ -23,5 +23,6 @@ namespace SurfScoutBackend.Models
         public int UserId { get; set; }                 // External key
         public User User { get; set; } = null!;         // Navigation property
         public ICollection<WindField> WindFields { get; set; } = new List<WindField>();
+        public ICollection<WindFieldInterpolated> WindFieldsInterpolated { get; set; } = new List<WindFieldInterpolated>();
     }
 }

@@ -22,7 +22,7 @@ namespace SurfScoutBackend.Weather
             List<WindField> windFieldHistory = new List<WindField>();
 
             // Calculate data points inside windfield polygon >>> Spacing is 25km (related to frontend)
-            List<Point> points = GeoDataHelper.GenerateRasterPointsInPolygon(spot.WindFetchPolygon, 25000.0);
+            List<Point> points = GeoDataFunctions.GenerateRasterPointsInPolygon(spot.WindFetchPolygon, 25000.0);
 
             // Set the time steps
             int timeStep_hours = 3;

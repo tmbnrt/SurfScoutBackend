@@ -4,7 +4,7 @@ using SurfScoutBackend.Models.DTOs;
 
 namespace SurfScoutBackend.Utilities
 {
-    public static class GeoDataHelper
+    public static class GeoDataFunctions
     {
         public static Polygon? CreatePolygonFromDto(GeoJsonDto dto)
         {

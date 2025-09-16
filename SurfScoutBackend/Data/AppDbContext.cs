@@ -81,6 +81,22 @@ namespace SurfScoutBackend.Data
                 .Property(p => p.Location)
                 .HasColumnType("geometry(Point,4326)");
 
+            modelBuilder.Entity<WindFieldInterpolated>()
+                .HasOne(wfi => wfi.Session)
+                .WithMany(s => s.WindFieldsInterpolated)
+                .HasForeignKey(wfi => wfi.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WindFieldCellInterpolated>()
+                .HasOne(p => p.WindFieldInterpolated)
+                .WithMany(w => w.Cells)
+                .HasForeignKey(p => p.WindFieldInterpolatedId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<WindFieldCellInterpolated>()
+                .HasIndex(p => p.CellGeometry)
+                .HasMethod("GIST");
+
             modelBuilder.Entity<PlannedSession>()
                 .HasMany(p => p.Participants)
                 .WithOne()
