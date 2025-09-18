@@ -1,13 +1,46 @@
-﻿using NetTopologySuite.Geometries;
+﻿using Microsoft.EntityFrameworkCore.Metadata.Conventions;
+using NetTopologySuite.Geometries;
 using NetTopologySuite.Operation.Valid;
+using SurfScoutBackend.Data;
+using SurfScoutBackend.Models;
 using SurfScoutBackend.Models.WindFieldModel;
 
 namespace SurfScoutBackend.Utilities
 {
     public class GeoSpatialOperations
     {
+        public static async Task<List<WindFieldInterpolated>> InterpolateWindFieldsAsync(List<WindField> windFields,
+                                                                                         Polygon ntsPolygon)
+        {
+            List<WindFieldInterpolated> interpolatedWindFields = new List<WindFieldInterpolated>();
+
+            // Set cell size
+            int cellSizeMeters = 1000;
+
+            // Run the interpolation for each wind field
+            foreach (WindField windField in windFields)
+            {
+                List<WindFieldCellInterpolated> wfc_int = InterpolateWindField(windField, ntsPolygon, cellSizeMeters);
+
+                // Create new WindFieldInterpolated object
+                var windFieldInterpolated = new WindFieldInterpolated
+                {
+                    Date = windField.Date,
+                    Timestamp = windField.Timestamp,
+                    SessionId = windField.SessionId,
+                    cellSizeMeters = cellSizeMeters,
+                    Cells = wfc_int,
+                    Session = windField.Session
+                };
+
+                interpolatedWindFields.Add(windFieldInterpolated);
+            }
+
+            return interpolatedWindFields;
+        }
+
         public static List<WindFieldCellInterpolated> InterpolateWindField(WindField windField, Polygon ntsPolygon,
-                                                                            int cellSizeMeters, double power = 2.0)
+                                                                                 int cellSizeMeters, double power = 2.0)
         {
             var interpolatedCells = new List<WindFieldCellInterpolated>();
 

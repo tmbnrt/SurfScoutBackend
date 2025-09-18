@@ -98,6 +98,16 @@ namespace SurfScoutBackend.Controllers
                 // Add data to database
                 _context.windfields.AddRange(historic_windfields);
                 await _context.SaveChangesAsync();
+
+                // Run function to interpolate wind fields and store in database (fire and forget)
+                _ = Task.Run(async () =>
+                {
+                    List<WindFieldInterpolated> windfields_int = await GeoSpatialOperations
+                                                                        .InterpolateWindFieldsAsync(historic_windfields,
+                                                                                                    spot.WindFetchPolygon);
+                    _context.windfieldsinterpolated.AddRange(windfields_int);
+                    await _context.SaveChangesAsync();
+                });
             }
 
             return Ok("Session saved successfully");

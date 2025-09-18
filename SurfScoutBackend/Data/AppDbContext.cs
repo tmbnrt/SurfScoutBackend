@@ -13,6 +13,8 @@ namespace SurfScoutBackend.Data
         public DbSet<Session> sessions { get; set; }
         public DbSet<WindField> windfields { get; set; }
         public DbSet<WindFieldPoint> windfieldpoints { get; set; }
+        public DbSet<WindFieldInterpolated> windfieldsinterpolated { get; set; }
+        public DbSet<WindFieldCellInterpolated> windfieldcellsinterpolated { get; set; }
         public DbSet<PlannedSession> plannedsessions { get; set; }
         public DbSet<SessionParticipant> sessionparticipants { get; set; }
         public DbSet<WindForecast> windforecasts { get; set; }
