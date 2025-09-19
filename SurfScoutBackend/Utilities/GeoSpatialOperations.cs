@@ -15,7 +15,7 @@ namespace SurfScoutBackend.Utilities
             List<WindFieldInterpolated> interpolatedWindFields = new List<WindFieldInterpolated>();
 
             // Set cell size
-            int cellSizeMeters = 1000;
+            int cellSizeMeters = 1500;
 
             // Run the interpolation for each wind field
             foreach (WindField windField in windFields)
@@ -28,7 +28,7 @@ namespace SurfScoutBackend.Utilities
                     Date = windField.Date,
                     Timestamp = windField.Timestamp,
                     SessionId = windField.SessionId,
-                    cellSizeMeters = cellSizeMeters,
+                    CellSizeMeters = cellSizeMeters,
                     Cells = wfc_int,
                     Session = windField.Session
                 };
@@ -65,6 +65,7 @@ namespace SurfScoutBackend.Utilities
 
                     interpolatedCells.Add(new WindFieldCellInterpolated
                     {
+                        WindFieldInterpolatedId = windField.Id,
                         WindSpeedKnots = interpolatedValue,
                         CellGeometry = cellPolygon
                     });
