@@ -95,9 +95,9 @@ namespace SurfScoutBackend.Data
                 .HasForeignKey(p => p.WindFieldInterpolatedId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            modelBuilder.Entity<WindFieldCellInterpolated>()
-                .HasIndex(p => p.CellGeometry)
-                .HasMethod("GIST");
+            //modelBuilder.Entity<WindFieldCellInterpolated>()
+            //    .HasIndex(p => p.CellGeometry)
+            //    .HasMethod("GIST");
 
             modelBuilder.Entity<PlannedSession>()
                 .HasMany(p => p.Participants)

@@ -157,33 +157,5 @@ namespace SurfScoutBackend.Controllers
 
             return Ok(sessionDtos);
         }
-
-        // TODO: End point to return the wind field for a given session
-        [Authorize]
-        [HttpGet("windfields")]
-        public async Task<IActionResult> GetWindFieldsForSession([FromQuery] int? sessionId)
-        {
-            if (sessionId == null || sessionId <= 0)
-                return BadRequest("Session ID is not valid!");
-
-            if (_context == null)
-                return StatusCode(500, "Database context not initialized.");
-
-            var query = _context.sessions
-                .Where(s => s.Id == sessionId);
-
-            var sessions = await query.ToListAsync();
-
-            if (!sessions.Any())
-                return NotFound($"No sessions found for spot ID '{sessionId}'.");
-
-            // Get wind fields for the session
-            List<WindField> windFields = await _context.windfields
-                .Include(wf => wf.Points)
-                .Where(wf => wf.SessionId == sessionId)
-                .ToListAsync();
-
-            return Ok(windFields);
-        }
     }
 }

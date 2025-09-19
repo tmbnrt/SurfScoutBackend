@@ -40,7 +40,7 @@ namespace SurfScoutBackend.Utilities
         }
 
         public static List<WindFieldCellInterpolated> InterpolateWindField(WindField windField, Polygon ntsPolygon,
-                                                                                 int cellSizeMeters, double power = 2.0)
+                                                                           int cellSizeMeters, double power = 2.0)
         {
             var interpolatedCells = new List<WindFieldCellInterpolated>();
 
@@ -48,26 +48,28 @@ namespace SurfScoutBackend.Utilities
             var windValues = windField.Points.Select(p => p.WindSpeedKnots).ToList();
 
             var envelope = ntsPolygon.EnvelopeInternal;
-            double cellSizeDeg = cellSizeMeters / 111000.0;     // Approximation for WGS84
+            double cellSizeDeg = cellSizeMeters / 111000.0;     // WGS84 approximation
 
             for (double x = envelope.MinX; x <= envelope.MaxX; x += cellSizeDeg)
             {
                 for (double y = envelope.MinY; y <= envelope.MaxY; y += cellSizeDeg)
                 {
-                    var center = new Coordinate(x + cellSizeDeg / 2, y + cellSizeDeg / 2);
-                    var centerPoint = new Point(center);
+                    double centerX = x + cellSizeDeg / 2;
+                    double centerY = y + cellSizeDeg / 2;
 
+                    var centerPoint = new Point(centerX, centerY);
                     if (!ntsPolygon.Contains(centerPoint))
                         continue;
 
-                    double interpolatedValue = InterpolateIDW(center, sampleCoords, windValues, power);
-                    var cellPolygon = CreateSquarePolygon(center, cellSizeDeg);
+                    double interpolatedValue = InterpolateIDW(new Coordinate(centerX, centerY), sampleCoords, windValues, power);
 
                     interpolatedCells.Add(new WindFieldCellInterpolated
                     {
                         WindFieldInterpolatedId = windField.Id,
                         WindSpeedKnots = interpolatedValue,
-                        CellGeometry = cellPolygon
+                        CenterX = centerX,
+                        CenterY = centerY,
+                        CellSizeMeters = cellSizeMeters
                     });
                 }
             }
