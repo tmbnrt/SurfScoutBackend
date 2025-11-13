@@ -23,7 +23,7 @@ namespace SurfScoutBackend.Controllers
         }
 
         [Authorize]
-        [HttpGet("windfields")]
+        [HttpGet("sessionwindfield")]
         public async Task<IActionResult> ExportWindFieldsForSession([FromQuery] int? sessionId)
         {
             if (sessionId == null || sessionId <= 0)

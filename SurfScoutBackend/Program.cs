@@ -57,6 +57,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// CORS policy to allow requests from Angular Dev-Server
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngularDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200")     // Angular Dev-Server
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 // Backgroundservice for polling wind forecast data
 builder.Services.AddHostedService<WindForecastPoller>();
 
@@ -121,6 +132,9 @@ app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Enable CORS policy
+app.UseCors("AllowAngularDev");
 
 app.MapControllers();
 
